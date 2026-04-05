@@ -13,3 +13,6 @@ build/
 # Windows
 Thumbs.db
 .DB_Store
+
+# PyCharm
+.idea/
