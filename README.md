@@ -19,9 +19,9 @@ Linux and macOS support may be added in future versions.
 
 ## Features
 
-* **Real-time Status Updater:** View the EV3 screen and device status live.  
-* **Directory Viewer:** Browse, add, rename, or delete EV3 files from within the IDE.  
-* **Code Editor:** Full-featured editor with syntax highlighting for Python and C++.  
+* **Real-time Status Updater:** View the EV3 screen and device status live.
+* **Directory Viewer:** Browse, add, rename, or delete EV3 files from within the IDE.
+* **Code Editor:** Full-featured editor with syntax highlighting for Python and C++.
 * **Integrated Console:** Run programs directly on the EV3 and see output and errors in real-time.  
 * **Automatic EV3 File Management:** Installs required system files (`ev3dev.h`, `ev3dev.cpp`, `libev3dev.a`).  
 * **Python Module Support:** Automatically installs Python modules like `python-uinput`.
@@ -46,8 +46,8 @@ To let the IDE transfer files via `scp` directly to the EV3:
 ssh-keygen
 ```
 * If you are asked whether to overwrite an existing key, type `n` and press Enter.
-* If you are asked for a file location, use the default one by pressing the enter key.
-* If you are asked for a passphrase, simply press enter. Do it twice if you have to repeat the passphrase.
+* If you are asked for a file location, use the default one by pressing the Enter key.
+* If you are asked for a passphrase, simply press Enter. Do it twice if you have to repeat the passphrase.
 
 **1.4** Copy the public key to the EV3:
 
@@ -109,13 +109,15 @@ robot ALL=(ALL) NOPASSWD:ALL
 
 **4.** The IDE will automatically check if the ev3dev files are present.
 
-### Build from Source
+### Build from Source (optional)
 
 Requirements:
 * Python 3.13
 * PyInstaller
 
-Build:
+Open PowerShell (or CMD) and navigate to the project folder: `cd C:\path\to\EV3-IDE`
+
+Run the following command to build the IDE:
 
 ```bash
 pyinstaller --noconsole --onedir --clean --add-data "images;images" --add-data "ide_communication.py;." --add-data "ev3_dependencies;ev3_dependencies" --add-data "fonts;fonts" --icon=images/ev3.ico --distpath pyinstaller/dist --workpath pyinstaller/build --name EV3-IDE main.py
