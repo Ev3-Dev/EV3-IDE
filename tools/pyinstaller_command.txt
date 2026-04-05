@@ -1,0 +1,1 @@
+pyinstaller --noconsole --onedir --clean --add-data "images;images" --add-data "ide_communication.py;." --add-data "ev3_dependencies;ev3_dependencies" --add-data "fonts;fonts" --icon=images/ev3.ico --distpath pyinstaller/dist --workpath pyinstaller/build --name EV3-IDE main.py

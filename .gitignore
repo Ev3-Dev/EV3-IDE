@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# PyInstaller
+pyinstaller/
+dist/
+build/
+*.exe
+
+# Windows
+Thumbs.db
+.DB_Store
