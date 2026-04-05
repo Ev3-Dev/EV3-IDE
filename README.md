@@ -11,16 +11,21 @@ It supports C++ and Python development and automatically installs required libra
 
 Linux and macOS support may be added in future versions.
 
+* EV3 host name must be 'ev3dev' (the default one).
+
+> **Note:** This program is designed around `ev3dev2`. It only works if your EV3 is running this specific OS. Get it at [https://www.ev3dev.org/downloads/](https://www.ev3dev.org/downloads/).
+
 ---
 
 ## Features
-* Automatic installation of EV3-specific files:
-  * `ev3dev.h`
-  * `ev3dev.cpp`
-  * `libev3dev.a`
-* Automatic installation of module `python-uinput`
-* Integrated into the IDE, allowing one-click transfer of files to the EV3
-> This program is designed around `ev3dev2`. It only works if your EV3 is running this specific OS. Get it at https://www.ev3dev.org/downloads/.
+
+* **Real-time Status Updater:** View the EV3 screen and device status live.  
+* **Directory Viewer:** Browse, add, rename, or delete EV3 files from within the IDE.  
+* **Code Editor:** Full-featured editor with syntax highlighting for Python and C++.  
+* **Integrated Console:** Run programs directly on the EV3 and see output and errors in real-time.  
+* **Automatic EV3 File Management:** Installs required system files (`ev3dev.h`, `ev3dev.cpp`, `libev3dev.a`).  
+* **Python Module Support:** Automatically installs Python modules like `python-uinput`.
+
 ---
   
 ## EV3 Prerequisites
@@ -41,6 +46,7 @@ To let the IDE transfer files via `scp` directly to the EV3:
 ssh-keygen
 ```
 * If you are asked whether to overwrite an existing key, type `n` and press Enter.
+* If you are asked for a file location, use the default one by pressing the enter key.
 * If you are asked for a passphrase, simply press enter. Do it twice if you have to repeat the passphrase.
 
 **1.4** Copy the public key to the EV3:
@@ -49,7 +55,7 @@ ssh-keygen
 type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh robot@ev3dev.local "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
 ```
 
-* When you are asked whether you want to allow ... and have the options '[yes, no, fingerprint]', type `yes`.
+* When you are asked whether you want to allow a connection and have the options '(yes, no, [fingerprint])', type `yes`.
 * If you are asked for a password for 'robot', enter your password for the EV3 (the default one is `maker`; if you haven't changed it, this will be it).
 
 **1.5**  After this, the IDE can connect to the EV3 without asking for a password. Try to connect manually:
@@ -81,7 +87,7 @@ sudo visudo
 robot ALL=(ALL) NOPASSWD:ALL
 ```
 
->This lets the IDE move required system files without prompting for a password.
+> This lets the IDE move required system files without prompting for a password.
 
 ---
 
@@ -89,8 +95,7 @@ robot ALL=(ALL) NOPASSWD:ALL
 
 ### Download
 
-1. Go to the Releases page:
-   https://github.com/YOURNAME/ev3-ide/releases
+1. Go to the Releases page: [https://github.com/Ev3-Dev/EV3-IDE/releases](https://github.com/Ev3-Dev/EV3-IDE/releases)
 
 2. Download the latest version
 
@@ -107,13 +112,13 @@ robot ALL=(ALL) NOPASSWD:ALL
 ### Build from Source
 
 Requirements:
-- Python 3.13
-- PyInstaller
+* Python 3.13
+* PyInstaller
 
 Build:
 
 ```bash
-pyinstaller ...
+pyinstaller --noconsole --onedir --clean --add-data "images;images" --add-data "ide_communication.py;." --add-data "ev3_dependencies;ev3_dependencies" --add-data "fonts;fonts" --icon=images/ev3.ico --distpath pyinstaller/dist --workpath pyinstaller/build --name EV3-IDE main.py
 ```
 
 ---
@@ -122,7 +127,7 @@ pyinstaller ...
 
 * **C++ Projects:**
 
-  Include `#include <ev3dev.h>` and compile with the built-in button or manually in Terminal with the following command:
+  Use `#include <ev3dev.h>` and compile with the built-in button or manually in Terminal with the following command:
     ```bash
     ssh robot@ev3dev.local g++ <input_file> -o <output_file> -lev3dev
     ```
@@ -136,11 +141,12 @@ pyinstaller ...
     ```bash
     from ev3dev2.motor import MediumMotor, LargeMotor, OUTPUT_A, OUTPUT_D
     ```
-    Get more info at https://ev3dev-lang.readthedocs.io/projects/python-ev3dev/en/stable/spec.html.
+    Get more info at [https://ev3dev-lang.readthedocs.io/projects/python-ev3dev/en/stable/spec.html](https://ev3dev-lang.readthedocs.io/projects/python-ev3dev/en/stable/spec.html).
   
 ---
 
 ## Notes
+
 * The IDE creates temporary folders on the EV3 to stage files before moving them to system directories.
 * Automatic copying of system files works only after setting up passwordless SSH and `sudo NOPASSWD`.
 
@@ -151,6 +157,21 @@ pyinstaller ...
 This project is provided "as is", without warranty of any kind.  
 Use at your own risk.  
 
-This project is not affiliated with or endorsed by LEGO®.
+LEGO® and LEGO Mindstorms® are trademarks of the LEGO Group.
+This project is not affiliated with or endorsed by the LEGO Group.
 
-Icons in this project are provided by FlatIcon (https://www.flaticon.com).
+Icons in this project are provided by FlatIcon ([https://www.flaticon.com](https://www.flaticon.com)).
+
+---
+
+## Contact / Feedback
+
+If you encounter bugs or have suggestions, feel free to contact:
+
+evdev32@gmail.com
+
+---
+
+## License
+
+See LICENSE file for details.

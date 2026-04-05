@@ -23,8 +23,6 @@ def load_font(font_path):
     ctypes.windll.gdi32.AddFontResourceExW(font_path, FR_PRIVATE, 0)
 
 load_font("fonts/JetBrainsMono-Regular.ttf")
-load_font("fonts/Arial.ttf")
-load_font("fonts/SegoeUI.ttf")
 
 root.title("EV3-IDE")
 root.iconbitmap("images/ev3.ico")

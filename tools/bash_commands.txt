@@ -1,2 +1,0 @@
-sudo visudo
-robot ALL=(ALL) NOPASSWD: ALL
