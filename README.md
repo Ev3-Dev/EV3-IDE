@@ -20,7 +20,7 @@ Linux and macOS support may be added in future versions.
 ## Features
 
 * **Real-time Status Updater:** View the EV3 screen and device status live.
-* **Directory Viewer:** Browse, add, rename, or delete EV3 files from within the IDE.
+* **Directory Viewer:** Browse, add, rename, or delete EV3 files from within the IDE (by right-clicking on a file or directory to access the context menu).
 * **Code Editor:** Full-featured editor with syntax highlighting for Python and C++.
 * **Integrated Console:** Run programs directly on the EV3 and see output and errors in real-time.  
 * **Automatic EV3 File Management:** Installs required system files (`ev3dev.h`, `ev3dev.cpp`, `libev3dev.a`).  
@@ -55,7 +55,7 @@ ssh-keygen
 type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh robot@ev3dev.local "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
 ```
 
-* When you are asked whether you want to allow a connection and have the options '(yes, no, [fingerprint])', type `yes`.
+* If you are asked whether you want to allow a connection and have the options '(yes, no, [fingerprint])', type `yes`.
 * If you are asked for a password for 'robot', enter your password for the EV3 (the default one is `maker`; if you haven't changed it, this will be it).
 
 **1.5**  After this, the IDE can connect to the EV3 without asking for a password. Try to connect manually:
@@ -81,13 +81,13 @@ ssh robot@ev3dev.local
 sudo visudo
 ```
 
-**2.3** Add the following line at the end of the file:
+**2.3** Add the following line at the end of the file and save the change afterwards (via `Ctrl+x`, then type `y` and press Enter):
 
 ```powershell
 robot ALL=(ALL) NOPASSWD:ALL
 ```
 
-> This lets the IDE move required system files without prompting for a password.
+This lets the IDE move required system files without prompting for a password.
 
 ---
 
@@ -103,11 +103,11 @@ robot ALL=(ALL) NOPASSWD:ALL
 
 4. Run `EV3-IDE.exe`
 
-**2.** Start the IDE.
+5. Connect the EV3 via USB.
 
-**3.** Connect the EV3 via USB.
+6. The IDE will automatically check if the ev3dev files are present.
 
-**4.** The IDE will automatically check if the ev3dev files are present.
+7. (optional) Add a desktop shortcut to be able to start it more easily.
 
 ### Build from Source (optional)
 
@@ -159,10 +159,12 @@ pyinstaller --noconsole --onedir --clean --add-data "images;images" --add-data "
 This project is provided "as is", without warranty of any kind.  
 Use at your own risk.  
 
+The EV3 icon is AI-generated based on inspiration from LEGO EV3 hardware.  
+Icons in this project are provided by FlatIcon ([https://www.flaticon.com](https://www.flaticon.com)).  
+The IDE uses the JetBrains Mono font, courtesy of JetBrains ([https://www.jetbrains.com/lp/mono/](https://www.jetbrains.com/lp/mono/)).  
+
 LEGO® and LEGO Mindstorms® are trademarks of the LEGO Group.
 This project is not affiliated with or endorsed by the LEGO Group.
-
-Icons in this project are provided by FlatIcon ([https://www.flaticon.com](https://www.flaticon.com)).
 
 ---
 

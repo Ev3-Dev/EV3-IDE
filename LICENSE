@@ -1,8 +1,8 @@
-EV3-IDE License – Version 1.0
+EV3-IDE License – Version 1.0.0
 
-Copyright (c) 2026 [Your Name]
+Copyright (c) 2026 Ev3-Dev
 
-Permission is hereby granted to any person obtaining a copy of this software and associated documentation files (the "Software"), to use the Software **for personal, educational, or non-commercial purposes** only, including creating tutorials, demonstrations, or YouTube videos.
+Permission is hereby granted to any person obtaining a copy of this software and associated documentation files (the "Software"), to use the Software for personal, educational, or non-commercial purposes only, including creating tutorials, demonstrations, or YouTube videos.
 
 You may not:
 - Sell, redistribute, or license the Software as your own.
@@ -11,6 +11,8 @@ You may not:
 You may:
 - Use the Software to program and control LEGO Mindstorms EV3 devices.
 - Modify the Software for personal or educational purposes.
-- Share your modifications **non-commercially**.
+- Share your modifications non-commercially with attribution to the original author.
 
-The Software is provided "as-is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall the authors be liable for any claim, damages, or other liability arising from the use of the Software.
+The Software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall the authors be liable for any claim, damages, or other liability arising from the use of the Software.
+
+LEGO® and LEGO Mindstorms® are trademarks of the LEGO Group. This software is not affiliated with or endorsed by the LEGO Group.
