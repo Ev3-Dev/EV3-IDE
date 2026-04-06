@@ -2,6 +2,7 @@
 
 **EV3-IDE** is a lightweight development environment for the LEGO Mindstorms EV3.  
 It supports C++ and Python development and automatically installs required libraries on the EV3.
+
 ---
 
 ## Requirements
