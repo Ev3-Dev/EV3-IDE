@@ -164,6 +164,20 @@ The EV3 icon is AI-generated based on inspiration from LEGO EV3 hardware.
 Icons in this project are provided by FlatIcon ([https://www.flaticon.com](https://www.flaticon.com)).  
 The IDE uses the JetBrains Mono font, courtesy of JetBrains ([https://www.jetbrains.com/lp/mono/](https://www.jetbrains.com/lp/mono/)).  
 
+### Third-Party Libraries
+
+**python-uinput**  
+Automatically installed by the IDE when needed.  
+License: GNU General Public License v3 (GPL-3.0).  
+Copyright © 2007 Free Software Foundation, Inc.  
+Full license text included in the library.  
+
+**ev3dev C++ library (`ev3dev.cpp` / `ev3dev.h`)**  
+Automatically copied to the EV3 by the IDE.  
+Original authors: Franz Detro, Christophe Chaudelet (modifications for ev3dev Release 02.00.00)  
+License: GNU General Public License v2 or later (GPL-2.0+).  
+Full license text is included in the source files.
+
 LEGO® and LEGO Mindstorms® are trademarks of the LEGO Group.
 This project is not affiliated with or endorsed by the LEGO Group.
 
