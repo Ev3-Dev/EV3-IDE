@@ -2,7 +2,6 @@
 
 **EV3-IDE** is a lightweight development environment for the LEGO Mindstorms EV3.  
 It supports C++ and Python development and automatically installs required libraries on the EV3.
----
 
 ## Requirements
 
@@ -15,8 +14,6 @@ Linux and macOS support may be added in future versions.
 
 > **Note:** This program is designed around `ev3dev2`. It only works if your EV3 is running this specific OS. Get it at [https://www.ev3dev.org/downloads/](https://www.ev3dev.org/downloads/).
 
----
-
 ## Features
 
 * **Real-time Status Updater:** View the EV3 screen and device status live.
@@ -25,8 +22,6 @@ Linux and macOS support may be added in future versions.
 * **Integrated Console:** Run programs directly on the EV3 and see output and errors in real-time.  
 * **Automatic EV3 File Management:** Installs required system files (`ev3dev.h`, `ev3dev.cpp`, `libev3dev.a`).  
 * **Python Module Support:** Automatically installs Python modules like `python-uinput`.
-
----
   
 ## EV3 Prerequisites
 
@@ -89,8 +84,6 @@ robot ALL=(ALL) NOPASSWD:ALL
 
 This lets the IDE move required system files without prompting for a password.
 
----
-
 ## Installation
 
 ### Download
@@ -123,8 +116,6 @@ Run the following command to build the IDE:
 pyinstaller --noconsole --onedir --clean --add-data "images;images" --add-data "ide_communication.py;." --add-data "ev3_dependencies;ev3_dependencies" --add-data "fonts;fonts" --icon=images/ev3.ico --distpath pyinstaller/dist --workpath pyinstaller/build --name EV3-IDE main.py
 ```
 
----
-
 ## Usage
 
 * **C++ Projects:**
@@ -144,15 +135,11 @@ pyinstaller --noconsole --onedir --clean --add-data "images;images" --add-data "
     from ev3dev2.motor import MediumMotor, LargeMotor, OUTPUT_A, OUTPUT_D
     ```
     Get more info at [https://ev3dev-lang.readthedocs.io/projects/python-ev3dev/en/stable/spec.html](https://ev3dev-lang.readthedocs.io/projects/python-ev3dev/en/stable/spec.html).
-  
----
 
 ## Notes
 
 * The IDE creates temporary folders on the EV3 to stage files before moving them to system directories.
 * Automatic copying of system files works only after setting up passwordless SSH and `sudo NOPASSWD`.
-
----
 
 ## Disclaimer
 
@@ -161,20 +148,29 @@ Use at your own risk.
 
 The EV3 icon is AI-generated based on inspiration from LEGO EV3 hardware.  
 Icons in this project are provided by FlatIcon ([https://www.flaticon.com](https://www.flaticon.com)).  
-The IDE uses the JetBrains Mono font, courtesy of JetBrains ([https://www.jetbrains.com/lp/mono/](https://www.jetbrains.com/lp/mono/)).  
+The IDE uses the JetBrains Mono font under SIL Open Font License 1.1 (find it in directory fonts), courtesy of JetBrains ([https://www.jetbrains.com/lp/mono/](https://www.jetbrains.com/lp/mono/)).  
 
-LEGO® and LEGO Mindstorms® are trademarks of the LEGO Group.
-This project is not affiliated with or endorsed by the LEGO Group.
+### Third-Party Libraries
+**python-uinput:**  
+* Automatically installed by the IDE when needed.  
+* License: GNU General Public License v3 (GPL-3.0).  
+* Copyright © 2007 Free Software Foundation, Inc.  
+* Full license text included in the library.  
 
----
+**ev3dev C++ library (ev3dev.cpp / ev3dev.h):**    
+* Automatically copied to the EV3 by the IDE.  
+* Original authors: Franz Detro, Christophe Chaudelet (modifications for ev3dev Release 02.00.00)  
+* License: GNU General Public License v2 or later (GPL-2.0+).  
+* Full license text is included in the source files.  
+
+LEGO® and LEGO Mindstorms® are trademarks of the LEGO Group.  
+This project is not affiliated with or endorsed by the LEGO Group.  
 
 ## Contact / Feedback
 
 If you encounter bugs or have suggestions, feel free to contact:
 
 evdev32@gmail.com
-
----
 
 ## License
 
