@@ -64,6 +64,7 @@ class DirectoryUpdater:
         self.reload_button.place(x=375, y=11)
         # Keybindings
         self.editor.editor.bind("<Shift-F8>", lambda event=None: self.run_program(self.editor.get_content()))
+        self.editor.editor.bind("<Control-s>", lambda event=None: self.save_file())
         # Callback hinzufügen
         register_layout_callback(self.update_layout)
 
