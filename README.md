@@ -144,14 +144,13 @@ pyinstaller --noconsole --onedir --clean --add-data "images;images" --add-data "
 ## Disclaimer
 
 This project is provided "as is", without warranty of any kind.  
-Use at your own risk.  
-
-The EV3 icon is AI-generated based on inspiration from LEGO EV3 hardware.  
-Icons in this project are provided by FlatIcon ([https://www.flaticon.com](https://www.flaticon.com)).  
+Use at your own risk.
 
 The IDE uses the JetBrains Mono font under SIL Open Font License 1.1 (find it in directory fonts), courtesy of JetBrains ([https://www.jetbrains.com/lp/mono/](https://www.jetbrains.com/lp/mono/)).
 
 The IDE uses Google Material Icons, licensed under Apache 2.0 License included in `images/LICENSE-MATERIAL-ICONS`.
+
+The complete list of authors, source links, and specific license details for each icon can be found in the separate **[ATTRIBUTION.md](./ATTRIBUTION.md)** file.
 
 ### Third-Party Libraries
 **python-uinput:**  

@@ -27,16 +27,16 @@ class DirectoryUpdater:
         self.ev3_screen_viewer_toggle_value = 1
         self.max_buttons = 22
         self.directory_buttons = []
-        py_icon = ctk.CTkImage(light_image=Image.open("images/python.png"), dark_image=Image.open("images/python.png"), size=(13, 13))
-        c_icon = ctk.CTkImage(light_image=Image.open("images/c.png"), dark_image=Image.open("images/c.png"), size=(12, 13))
-        c_sharp_icon = ctk.CTkImage(light_image=Image.open("images/c-sharp.png"), dark_image=Image.open("images/c-sharp.png"), size=(13, 13))
-        cpp_icon = ctk.CTkImage(light_image=Image.open("images/c++.png"), dark_image=Image.open("images/c++.png"), size=(13, 13))
-        java_icon = ctk.CTkImage(light_image=Image.open("images/java.png"), dark_image=Image.open("images/java.png"), size=(13, 13))
-        js_icon = ctk.CTkImage(light_image=Image.open("images/js.png"), dark_image=Image.open("images/js.png"), size=(13, 13))
-        txt_icon = ctk.CTkImage(light_image=Image.open("images/text.png"), dark_image=Image.open("images/text.png"), size=(13, 13))
-        dir_icon = ctk.CTkImage(light_image=Image.open("images/folder.png"), dark_image=Image.open("images/folder.png"), size=(13, 13))
+        py_icon = ctk.CTkImage(light_image=Image.open("images/python.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), dark_image=Image.open("images/python.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), size=(16, 16))
+        c_icon = ctk.CTkImage(light_image=Image.open("images/c.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), dark_image=Image.open("images/c.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), size=(16, 16))
+        c_sharp_icon = ctk.CTkImage(light_image=Image.open("images/c-sharp.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), dark_image=Image.open("images/c-sharp.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), size=(16, 16))
+        cpp_icon = ctk.CTkImage(light_image=Image.open("images/c++.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), dark_image=Image.open("images/c++.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), size=(16, 16))
+        java_icon = ctk.CTkImage(light_image=Image.open("images/java.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), dark_image=Image.open("images/java.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), size=(16, 16))
+        js_icon = ctk.CTkImage(light_image=Image.open("images/js.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), dark_image=Image.open("images/js.png").convert("RGBA").resize((32, 32), Image.Resampling.LANCZOS), size=(14, 14))
+        txt_icon = ctk.CTkImage(light_image=Image.open("images/text.png"), dark_image=Image.open("images/text.png"), size=(14, 14))
+        dir_icon = ctk.CTkImage(light_image=Image.open("images/folder.png"), dark_image=Image.open("images/folder.png"), size=(14, 14))
         self.icon_map = {"py": py_icon, "c": c_icon, "cs": c_sharp_icon, "cpp": cpp_icon, "java": java_icon, "js": js_icon, "txt": txt_icon, "dir": dir_icon}
-        self.default_icon = ctk.CTkImage(light_image=Image.open("images/text.png"), dark_image=Image.open("images/text.png"), size=(13, 13))
+        self.default_icon = ctk.CTkImage(light_image=Image.open("images/text.png"), dark_image=Image.open("images/text.png"), size=(15, 15))
         # -------- GUI-Elemente --------
         self.directory_frame = ctk.CTkFrame(self.root, corner_radius=7, width=587, height=629, fg_color="#1C1A1A")
         self.directory_frame.place(x=self.base_frame_location_x, y=self.base_frame_location_y)
