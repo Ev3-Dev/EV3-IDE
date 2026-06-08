@@ -19,6 +19,7 @@ The following icons were provided by FlatIcon:
 * `settings.png` (Official name: Settings free icon) - Created by [Freepik](https://www.flaticon.com/authors/Freepik)
 * `rename.png` (Official name: Editing free icon) - Created by [Freepik](https://www.flaticon.com/authors/Freepik)
 * `delete.png` (Official name: **Bin free icon**) - Created by [Freepik](https://www.flaticon.com/authors/Freepik)
+* `download.png` (Official name: unknown) – Sourced from FlatIcon. The original creator profile or asset page could not be relocated on the platform. Used in good faith.
 
 ## Google Material Icons
 
