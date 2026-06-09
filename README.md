@@ -146,11 +146,11 @@ pyinstaller --noconsole --onedir --clean --add-data "images;images" --add-data "
 This project is provided "as is", without warranty of any kind.  
 Use at your own risk.
 
-The IDE uses the JetBrains Mono font under SIL Open Font License 1.1 (find it in directory fonts), courtesy of JetBrains ([https://www.jetbrains.com/lp/mono/](https://www.jetbrains.com/lp/mono/)).
+The IDE uses the JetBrains Mono font under SIL Open Font License 1.1 (find it in directory `fonts`), courtesy of JetBrains ([https://www.jetbrains.com/lp/mono/](https://www.jetbrains.com/lp/mono/)).
 
 The IDE uses Google Material Icons, licensed under Apache 2.0 License included in `images/LICENSE-MATERIAL-ICONS`.
 
-The complete list of authors, source links, and specific license details for each icon can be found in the separate **[ATTRIBUTION.md](./ATTRIBUTION.md)** file.
+The complete list of authors, source links, and specific license details for each icon can be found in the separate [ATTRIBUTION.md](./ATTRIBUTION.md) file.
 
 LEGO® and LEGO Mindstorms® are trademarks of the LEGO Group.  
 This project is not affiliated with or endorsed by the LEGO Group.  
