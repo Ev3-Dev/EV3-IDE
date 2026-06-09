@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from ev3_sender import EV3Sender
-from PIL import Image
+from PIL import Image, ImageOps
 from pop_up_window import PopUpWindow
 from context_pop_up import ContextPopUp
 
@@ -51,15 +51,15 @@ class DirectoryUpdater:
         self.home_button.place(x=80, y=11)
         self.spacer_1 = ctk.CTkFrame(self.directory_frame, height=29, width=2, fg_color="#3B3333")
         self.spacer_1.place(x=155, y=11)
-        img = ctk.CTkImage(light_image=Image.open("images/file.png"), dark_image=Image.open("images/file.png"), size=(15, 15))
+        img = ctk.CTkImage(light_image=ImageOps.expand(Image.open("images/file.png").resize((48, 48), Image.Resampling.LANCZOS), border=(1, 0, 0, 0), fill=0), dark_image=ImageOps.expand(Image.open("images/file.png").resize((48, 48), Image.Resampling.LANCZOS), border=(1, 0, 0, 0), fill=0), size=(14, 14))
         self.new_file_button = ctk.CTkButton(self.directory_frame, text="New file", image=img, corner_radius=5, width=1, anchor="w", font=("Segoe UI", 12), text_color="#D4D4D4", fg_color="#2A2626", bg_color="#1C1A1A", hover_color="#3B3333", command=lambda: self.pop_up_window.create_overlay("New file", self.ev3_selected_path, self.new_file), border_color="#2A2626", border_width=1)
         self.new_file_button.place(x=164, y=11)
-        img = ctk.CTkImage(light_image=Image.open("images/directory.png"), dark_image=Image.open("images/directory.png"), size=(15, 15))
+        img = ctk.CTkImage(light_image=ImageOps.expand(Image.open("images/directory.png").resize((48, 48), Image.Resampling.LANCZOS), border=(1, 0, 0, 0), fill=0), dark_image=ImageOps.expand(Image.open("images/directory.png").resize((48, 48), Image.Resampling.LANCZOS), border=(1, 0, 0, 0), fill=0), size=(14, 14))
         self.new_directory_button = ctk.CTkButton(self.directory_frame, text="New directory", image=img, corner_radius=5, width=1, anchor="w", font=("Segoe UI", 12), text_color="#D4D4D4", fg_color="#2A2626", bg_color="#1C1A1A", hover_color="#3B3333", command=lambda: self.pop_up_window.create_overlay("New directory", self.ev3_selected_path, self.new_directory), border_color="#2A2626", border_width=1)
         self.new_directory_button.place(x=249, y=11)
         self.spacer_2 = ctk.CTkFrame(self.directory_frame, height=29, width=2, fg_color="#3B3333")
         self.spacer_2.place(x=366, y=11)
-        img = ctk.CTkImage(light_image=Image.open("images/reload.png"), dark_image=Image.open("images/reload.png"), size=(15, 15))
+        img = ctk.CTkImage(light_image=ImageOps.expand(Image.open("images/reload.png").resize((48, 48), Image.Resampling.LANCZOS), border=(1, 0, 0, 0), fill=0), dark_image=ImageOps.expand(Image.open("images/reload.png").resize((48, 48), Image.Resampling.LANCZOS), border=(1, 0, 0, 0), fill=0), size=(14, 14))
         self.reload_button = ctk.CTkButton(self.directory_frame, text="Reload", image=img, corner_radius=5, width=1, anchor="w", font=("Segoe UI", 12), text_color="#D4D4D4", fg_color="#2A2626", bg_color="#1C1A1A", hover_color="#3B3333", command=self.reload, border_color="#2A2626", border_width=1)
         self.reload_button.place(x=375, y=11)
         # Keybindings

@@ -152,20 +152,6 @@ The IDE uses Google Material Icons, licensed under Apache 2.0 License included i
 
 The complete list of authors, source links, and specific license details for each icon can be found in the separate **[ATTRIBUTION.md](./ATTRIBUTION.md)** file.
 
-### Third-Party Libraries
-**python-uinput:**  
-* Automatically installed by the IDE when needed.  
-* License: GNU General Public License v3 (GPL-3.0).  
-* Copyright © 2007 Free Software Foundation, Inc.  
-* Full license text included in `ev3_dependencies/python-uinput/python_uinput-1.0.1.dist-info/LICENSE`.  
-
-**ev3dev C++ library (ev3dev.cpp / ev3dev.h):**    
-* Automatically copied to the EV3 by the IDE.  
-* Original authors: Franz Detro, Christophe Chaudelet (modifications for ev3dev Release 02.00.00)  
-* License: GNU General Public License v2 or later (GPL-2.0+).  
-* Full license text is included in `ev3_dependencies/LICENSE-GPL.txt` and in the source files.  
-* When distributing this library or derivative works, you must include the GPL license.  
-
 LEGO® and LEGO Mindstorms® are trademarks of the LEGO Group.  
 This project is not affiliated with or endorsed by the LEGO Group.  
 
