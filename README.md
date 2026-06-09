@@ -6,7 +6,7 @@ It supports C++ and Python development and automatically installs required libra
 ## Requirements
 
 * Windows 10 or Windows 11 (64-bit)
-* EV3 running ev3dev2
+* EV3 running ev3dev
 
 Linux and macOS support may be added in future versions.
 
