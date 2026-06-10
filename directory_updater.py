@@ -87,7 +87,7 @@ class DirectoryUpdater:
         if not self.is_file_selected():
             return
         if self.ev3_selected_path.startswith("/home/robot/.EV3-IDE") or self.ev3_run_path.startswith("/home/robot/.EV3-IDE"):
-            self.notification_manager.send_message(self.root, "Error", "Cannot edit EV3-IDE system files")
+            self.notification_manager.show_message(self.root, "Error", "Cannot edit EV3-IDE system files")
             return
         content = self.editor.get_content()
         content_bytes = content.encode("utf-8")

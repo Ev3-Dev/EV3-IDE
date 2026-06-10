@@ -7,6 +7,8 @@ class NotificationManager:
         self.FRAME_WIDTH = 280
 
     def show_message(self, root, header, content, duration=4000, margin=20):
+        if len(self.active_notifications) >= 8:
+            return
         root.update_idletasks()
         # ---- Frame erstellen ----
         notif_frame = ctk.CTkFrame(root, height=self.FRAME_HEIGHT, width=self.FRAME_WIDTH, corner_radius=8, fg_color="#333333", bg_color="#1C1A1A", border_width=1, border_color="#DDDDDD" if header != "Error" else "#FF5A5A")
