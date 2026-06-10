@@ -84,6 +84,15 @@ robot ALL=(ALL) NOPASSWD:ALL
 
 This lets the IDE move required system files without prompting for a password.
 
+### 3. g++ compiler
+
+To use the C++ compilation feature, **g++** must be installed on your EV3 brick. If it is a fresh ev3dev installation, simply run the following commands on your EV3 via SSH terminal before using the app:
+```bash
+sudo apt-get update
+sudo apt-get install g++
+```
+*(Without this, the app can still view files and run Python scripts, but compiling C++ will result in an error).*
+
 ## Installation
 
 ### Download
