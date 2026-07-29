@@ -1,0 +1,65 @@
+from PySide6.QtWidgets import QTabWidget, QPlainTextEdit
+from PySide6.QtCore import Signal
+
+class EditorTabs(QTabWidget):
+    file_changed = Signal(str, str)  # Pfad, Inhalt
+
+    def __init__(self):
+        super().__init__()
+        self.setObjectName("editor_tabs")
+        self.setDocumentMode(True)
+        self.setTabsClosable(True)
+        self.setMovable(True)
+        self.tabCloseRequested.connect(self._close_tab)
+        self._paths: dict[int, str] = {}  # Tab-Index → Remote-Pfad
+
+    def open_file(self, path: str, content: str):
+        # Schon offen? Dann nur fokussieren
+        for i, p in self._paths.items():
+            if p == path:
+                self.setCurrentIndex(i)
+                return
+
+        editor = self._make_editor()
+        editor.setPlainText(content)
+        editor.textChanged.connect(
+            lambda: self.file_changed.emit(
+                path, editor.toPlainText()
+            )
+        )
+
+        name  = path.split("/")[-1]
+        index = self.addTab(editor, name)
+        self._paths[index] = path
+        self.setCurrentIndex(index)
+
+    def current_content(self) -> str | None:
+        w = self.currentWidget()
+        return w.toPlainText() if w else None
+
+    def current_path(self) -> str | None:
+        return self._paths.get(self.currentIndex())
+
+    def mark_unsaved(self, index: int):
+        name = self.tabText(index)
+        if not name.startswith("● "):
+            self.setTabText(index, f"● {name}")
+
+    def mark_saved(self, index: int):
+        name = self.tabText(index).removeprefix("● ")
+        self.setTabText(index, name)
+
+    def _close_tab(self, index: int):
+        self.removeTab(index)
+        self._paths.pop(index, None)
+        # Indizes neu aufbauen
+        self._paths = {
+            i: p for i, (_, p)
+            in enumerate(sorted(self._paths.items()))
+        }
+
+    def _make_editor(self) -> QPlainTextEdit:
+        editor = QPlainTextEdit()
+        editor.setObjectName("code_editor")
+        editor.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
+        return editor

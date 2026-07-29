@@ -1,0 +1,146 @@
+/* ================ Allgemein ================ */
+
+QMainWindow#main_window {
+    background-color: #26282c;
+}
+
+.QSplitter::handle {
+    background: #26282c;
+}
+
+/* ================ Spezifische Widgets ================ */
+
+/* -------- Editor-Tab-Leiste -------- */
+
+QTabWidget#editor_tabs QTabBar {
+    background-color: #191a1c;
+}
+
+QTabWidget#editor_tabs QTabBar::tab {
+    border: 0px;
+    border-radius: 0px;
+
+    font-size: 13px;
+    font-family: "Segoe UI", sans-serif;
+    font-weight: 510;
+
+    height: 34px;
+    padding: 0px 35px 0px 10px;
+    min-width: 60px;
+    max-width: 220px;
+}
+
+QTabWidget#editor_tabs QTabBar::tab:selected {
+    color: #ffffff;
+    background: #252526;
+    border-bottom: 3px solid #185FA5;
+}
+
+QTabWidget#editor_tabs QTabBar::tab:!selected {
+    color: #d4d4d4;
+    background: #191a1c;
+    border-bottom: 3px solid #191a1c;
+}
+
+QTabWidget#editor_tabs QTabBar::close-button {
+    subcontrol-origin: padding;
+    subcontrol-position: right;
+    image: url("{ICON_PATH}/close.svg");
+    border-radius: 4px;
+}
+
+QTabWidget#editor_tabs QTabBar::close-button:hover {
+    background-color: #e81123;
+}
+
+QTabWidget#editor_tabs::pane {
+    border: 0px;
+    background-color: #0d0d60;
+}
+
+/* -------- Code-Editor -------- */
+
+QPlainTextEdit#code_editor {
+    background-color: #1e1f22;
+    color: #d4d4d4;
+    font-family: 'JetBrains Mono NL';
+    font-size: 14px;
+    border: 0px;
+}
+
+/* -------- Konsole -------- */
+
+QPlainTextEdit#console {
+    background-color: #1e1f22;
+    color: #d4d4d4;
+    font-family: 'JetBrains Mono NL';
+    font-size: 14px;
+    border: 0px;
+    border-radius: 5px;
+}
+
+QPlainTextEdit#terminal {
+    background-color: #1e1f22;
+    color: #d4d4d4;
+    font-family: 'JetBrains Mono NL';
+    font-size: 14px;
+    border: 0px;
+    border-radius: 5px;
+}
+
+QTabWidget#bottom_tabs QTabBar {
+    background-color: #191a1c;
+}
+
+QTabWidget#bottom_tabs QTabBar::tab {
+    background: #191a1c;
+    color: #4e1212;
+}
+
+QTabWidget#bottom_tabs QTabBar::tab:selected {
+    background: #FF5500;
+}
+
+/* -------- Sidebar -------- */
+
+/* Obere Leiste */
+
+QFrame#left_sidebar {
+    background-color: #191a1c;
+    border-radius: 5px;
+}
+
+QComboBox#left_sidebar_dropdown {
+    background-color: #2e2f30;
+    padding: 0px 0px 1px 4px;
+    font-size: 14px;
+    color: #cdd2d0;
+}
+
+/* Content-Area */
+
+QTreeWidget#file_tree {
+    background-color: #191a1c;
+}
+
+QListWidget#lib_manager_list {
+    background: #191a1c;
+    border: 1px solid #555;
+    border-radius: 5px;
+}
+
+QListWidget#lib_manager_list::item {
+    background: transparent;
+}
+
+QPushButton#btn_install {
+    background-color: #2e2f30;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 3px 3px 3px 3px;
+}
+
+QPushButton#btn_install:hover {
+    background-color: #404040;
+}

@@ -1,0 +1,12 @@
+QMainWindow {
+    background-color: gray;
+}
+
+QFrame, QPlainTextEdit {
+    background-color: #fdfdfd;
+    border: 1px solid #fdfdfd;
+    border-radius: 5px;
+    color: #24292e;
+    font-family: 'JetBrains Mono';
+    font-size: 15px;
+}
