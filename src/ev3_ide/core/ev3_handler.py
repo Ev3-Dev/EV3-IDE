@@ -1,9 +1,5 @@
-import subprocess
 import time
 import threading
-import struct
-import json
-import socket
 import paramiko
 from ev3_ide.core.resources import resource_path
 
@@ -28,8 +24,9 @@ class EV3Handler:
             return False
         try:
             self._shell = self._ssh.invoke_shell()
-            self._shell.settimeout(1.0)
-            self._shell.send(f"{self.EV3_AGENT_PATH}\n")
+            self._shell.settimeout(10.0)
+            self._shell.send(f"python3 /home/robot/scripts/Printer/main.py\n")
+            # self._shell.send(f"{self.EV3_AGENT_PATH}\n")
             time.sleep(0.5)
             return True
         except Exception as e:
@@ -40,6 +37,14 @@ class EV3Handler:
             return False
         try:
             sftp = self._ssh.open_sftp()
+            cmd = f"mkdir -p {self.EV3_AGENT_PATH.rstrip("agent")}"
+            stdin, stdout, stderr = self._ssh.exec_command(cmd)
+            try:
+                sftp.chdir(self.EV3_AGENT_PATH)
+                print(f"Ordner existiert bereits: {self.EV3_AGENT_PATH}")
+            except IOError:
+                print(f"Erstelle Ordner: {self.EV3_AGENT_PATH}")
+                sftp.mkdir(self.EV3_AGENT_PATH)
             sftp.put(self.AGENT_SCRIPT_PATH, self.EV3_AGENT_PATH)
             sftp.close()
             return True
@@ -51,7 +56,7 @@ class EV3Handler:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         try:
-            ssh.connect(hostname=self.ev3_address, username=self.ev3_username, password=self.ev3_password, timeout=0.8, banner_timeout=0.8)
+            ssh.connect(hostname=self.ev3_address, username=self.ev3_username, password=self.ev3_password, timeout=10.0, banner_timeout=10.0)
             return True, ssh
         except Exception:
             return False, None
@@ -79,6 +84,7 @@ class EV3Handler:
             result, ssh = self.check_available_and_connect()
             if result:
                 self._ssh = ssh
+                print("Connected")
                 break
             time.sleep(0.1)
         self.deploy_agent()
