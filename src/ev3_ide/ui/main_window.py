@@ -2,7 +2,7 @@ import ctypes
 from ctypes import wintypes
 
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QSplitter, QPushButton
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QPoint, QEvent, QTimer
 
 from ev3_ide.ui.widgets.toolbar import IDETitleBar
 from ev3_ide.ui.widgets.left_sidebar import LeftSidebar
@@ -25,31 +25,42 @@ HTBOTTOM = 15
 HTBOTTOMLEFT = 16
 HTBOTTOMRIGHT = 17
 
+SWP_NOSIZE = 0x0001
+SWP_NOMOVE = 0x0002
+SWP_NOZORDER = 0x0004
+SWP_NOACTIVATE = 0x0010
+SWP_FRAMECHANGED = 0x0020
+
 
 class MSG(ctypes.Structure):
-    _fields_ = [
-        ("hwnd", ctypes.c_void_p),
-        ("message", wintypes.UINT),
-        ("wParam", wintypes.WPARAM),
-        ("lParam", wintypes.LPARAM),
-        ("time", wintypes.DWORD),
-        ("pt_x", ctypes.c_long),
-        ("pt_y", ctypes.c_long),
-    ]
+    _fields_ = [("hwnd", ctypes.c_void_p), ("message", wintypes.UINT), ("wParam", wintypes.WPARAM), ("lParam", wintypes.LPARAM), ("time", wintypes.DWORD), ("pt_x", ctypes.c_long), ("pt_y", ctypes.c_long),]
 
 class RECT(ctypes.Structure):
-    _fields_ = [
-        ("left", wintypes.LONG),
-        ("top", wintypes.LONG),
-        ("right", wintypes.LONG),
-        ("bottom", wintypes.LONG),
-    ]
+    _fields_ = [("left", wintypes.LONG), ("top", wintypes.LONG), ("right", wintypes.LONG), ("bottom", wintypes.LONG),]
 
 class NCCALCSIZE_PARAMS(ctypes.Structure):
-    _fields_ = [
-        ("rgrc", RECT * 3),
-        ("lppos", ctypes.c_void_p),
-    ]
+    _fields_ = [("rgrc", RECT * 3), ("lppos", ctypes.c_void_p),]
+
+
+class MONITORINFO(ctypes.Structure):
+    _fields_ = [("cbSize", wintypes.DWORD), ("rcMonitor", RECT), ("rcWork", RECT), ("dwFlags", wintypes.DWORD),]
+
+
+user32 = ctypes.windll.user32
+
+MonitorFromWindow = user32.MonitorFromWindow
+MonitorFromWindow.argtypes = [wintypes.HWND, wintypes.DWORD,]
+MonitorFromWindow.restype = wintypes.HMONITOR
+
+GetMonitorInfoW = user32.GetMonitorInfoW
+GetMonitorInfoW.argtypes = [wintypes.HMONITOR, ctypes.POINTER(MONITORINFO),]
+GetMonitorInfoW.restype = wintypes.BOOL
+
+MONITOR_DEFAULTTONEAREST = 2
+
+SetWindowPos = user32.SetWindowPos
+SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, wintypes.UINT,]
+SetWindowPos.restype = wintypes.BOOL
 
 
 class MainWindow(QMainWindow):
@@ -66,7 +77,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setObjectName("main_window")
         self.setMinimumSize(1200, 750)
-        self.showMaximized()
+        # self.showMaximized()
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -106,78 +117,79 @@ class MainWindow(QMainWindow):
         self.editor_tabs.open_file("/home/robot/projekt/main.py", "")
         self.editor_tabs.open_file("/home/robot/projekt/fahrsteuerung.py","")
 
+    def _refresh_window_frame(self):
+        hwnd = wintypes.HWND(int(self.winId()))
+        SetWindowPos(hwnd, None, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED,)
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.WindowStateChange:
+            QTimer.singleShot(0, self._refresh_window_frame)
+        super().changeEvent(event)
+
     def nativeEvent(self, eventType, message):
-        if eventType == "windows_generic_MSG":
-            msg = MSG.from_address(message.__int__())
+        if eventType != "windows_generic_MSG":
+            return super().nativeEvent(eventType, message)
+        msg = MSG.from_address(message.__int__())
 
-            if msg.message == WM_NCCALCSIZE and msg.wParam:
+        # Title-Bar
+        if msg.message == WM_NCCALCSIZE and msg.wParam:
+            params = NCCALCSIZE_PARAMS.from_address(msg.lParam)
+            rect = params.rgrc[0]
+            if self.isMaximized():
+                monitor = MonitorFromWindow(wintypes.HWND(int(self.winId())), MONITOR_DEFAULTTONEAREST,)
+                info = MONITORINFO()
+                info.cbSize = ctypes.sizeof(MONITORINFO)
+                if GetMonitorInfoW(monitor, ctypes.byref(info)):
+                    work = info.rcWork
+                    rect.left = work.left
+                    rect.top = work.top
+                    rect.right = work.right
+                    rect.bottom = work.bottom
+            return True, 0
 
-                params = NCCALCSIZE_PARAMS.from_address(
-                    msg.lParam
-                )
+        # Resizing
+        if msg.message == WM_NCHITTEST:
+            global_x = ctypes.c_short(msg.lParam & 0xFFFF).value
+            global_y = ctypes.c_short((msg.lParam >> 16) & 0xFFFF).value
 
-                rect = params.rgrc[0]
+            local = self.mapFromGlobal(QPoint(global_x, global_y))
 
-                print(
-                    "NEW WINDOW:",
-                    rect.left,
-                    rect.top,
-                    rect.right,
-                    rect.bottom,
-                )
+            x = local.x()
+            y = local.y()
 
-                return True, 0
+            width = self.width()
+            height = self.height()
 
-            elif msg.message == WM_NCHITTEST:
-                x = ctypes.c_short(msg.lParam & 0xFFFF).value
-                y = ctypes.c_short((msg.lParam >> 16) & 0xFFFF).value
-                top_left = self.mapToGlobal(self.rect().topLeft())
+            border = self.RESIZE_BORDER
 
-                local_x = x - top_left.x()
-                local_y = y - top_left.y()
-
-                width = self.width()
-                height = self.height()
-
-                border = self.RESIZE_BORDER
-
-                left = local_x < border
-                right = local_x >= width - border
-
-                top = local_y < border
-                bottom = local_y >= height - border
-
+            if not self.isMaximized():
+                left = x < border
+                right = x >= width - border
+                top = y < border
+                bottom = y >= height - border
                 if top and left:
                     return True, HTTOPLEFT
-
                 if top and right:
                     return True, HTTOPRIGHT
-
                 if bottom and left:
                     return True, HTBOTTOMLEFT
-
                 if bottom and right:
                     return True, HTBOTTOMRIGHT
-
                 if left:
                     return True, HTLEFT
-
                 if right:
                     return True, HTRIGHT
-
                 if top:
                     return True, HTTOP
-
                 if bottom:
                     return True, HTBOTTOM
 
-                if 0 <= local_y < self.title_bar.height():
-                    widget = self.childAt(local_x, local_y)
-                    if isinstance(widget, QPushButton):
-                        return False, HTCLIENT
-                    return True, HTCAPTION
-
-                return True, HTCLIENT
+            if 0 <= y < self.title_bar.height():
+                widget = self.childAt(x, y)
+                if isinstance(widget, QPushButton):
+                    return True, HTCLIENT
+                return True, HTCAPTION
+            return True, HTCLIENT
 
         return super().nativeEvent(eventType, message)
 
