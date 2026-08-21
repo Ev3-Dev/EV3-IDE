@@ -8,10 +8,12 @@ class EV3Handler:
         self._ssh = None
         self._shell = None
         self._response_buffer = None
-        self.running = True
+        self._stop_event = threading.Event()
         self.session_thread = None
         self.AGENT_SCRIPT_PATH = resource_path("core/ev3_agent")
         self.EV3_AGENT_PATH = "/home/robot/.ev3-ide/agent"
+        self.EV3_IDE_DIR = "/home/robot/.ev3-ide/"
+
         self.ev3_username = "robot"
         self.ev3_address = "ev3dev.local"
         self.ev3_password = "maker"
@@ -25,28 +27,33 @@ class EV3Handler:
         try:
             self._shell = self._ssh.invoke_shell()
             self._shell.settimeout(10.0)
-            self._shell.send(f"python3 /home/robot/scripts/Printer/main.py\n")
-            # self._shell.send(f"{self.EV3_AGENT_PATH}\n")
+            self._shell.send(f"{self.EV3_AGENT_PATH}\n")
             time.sleep(0.5)
             return True
         except Exception as e:
+            print(f"Fehler: {e}")
             return False
 
     def deploy_agent(self):
         if self._ssh is None:
             return False
         try:
-            sftp = self._ssh.open_sftp()
-            cmd = f"mkdir -p {self.EV3_AGENT_PATH.rstrip("agent")}"
-            stdin, stdout, stderr = self._ssh.exec_command(cmd)
-            try:
-                sftp.chdir(self.EV3_AGENT_PATH)
-                print(f"Ordner existiert bereits: {self.EV3_AGENT_PATH}")
-            except IOError:
-                print(f"Erstelle Ordner: {self.EV3_AGENT_PATH}")
-                sftp.mkdir(self.EV3_AGENT_PATH)
-            sftp.put(self.AGENT_SCRIPT_PATH, self.EV3_AGENT_PATH)
-            sftp.close()
+            # Directory erstellen
+            stdin, stdout, stderr = self._ssh.exec_command(f"mkdir -p '{self.EV3_IDE_DIR}'")
+            exit_code = stdout.channel.recv_exit_status()
+            if exit_code != 0:
+                error = stderr.read().decode(errors="replace")
+                raise RuntimeError(f"Verzeichnis konnte nicht erstellt werden: {error}")
+            # Agent übertragen
+            with self._ssh.open_sftp() as sftp:
+                sftp.put(self.AGENT_SCRIPT_PATH, self.EV3_AGENT_PATH)
+            # Ausführbar machen
+            stdin, stdout, stderr = self._ssh.exec_command(f"chmod +x '{self.EV3_AGENT_PATH}'")
+            exit_code = stdout.channel.recv_exit_status()
+            if exit_code != 0:
+                error = stderr.read().decode(errors="replace")
+                raise RuntimeError(f"chmod fehlgeschlagen: {error}")
+            print("Agent erfolgreich übertragen und ausführbar gemacht.")
             return True
         except Exception as e:
             print(f"Fehler: {e}")
@@ -56,7 +63,7 @@ class EV3Handler:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         try:
-            ssh.connect(hostname=self.ev3_address, username=self.ev3_username, password=self.ev3_password, timeout=10.0, banner_timeout=10.0)
+            ssh.connect(hostname=self.ev3_address, username=self.ev3_username, password=self.ev3_password, timeout=2.0, banner_timeout=5.0)
             return True, ssh
         except Exception:
             return False, None
@@ -79,23 +86,15 @@ class EV3Handler:
 
     def _start_session(self):
         while True:
-            if not self.running:
+            if self._stop_event.wait(0.5):
                 return
             result, ssh = self.check_available_and_connect()
             if result:
                 self._ssh = ssh
                 print("Connected")
                 break
-            time.sleep(0.1)
         self.deploy_agent()
         self.open_shell_and_start_agent()
-        #self.kill_processes_before_start()
-        #self.check_ev3_file()
-        #self.ssh_container.ssh = subprocess.Popen(["ssh", f"robot@{self.ev3_name}.local", "python3", "/home/robot/.EV3-IDE/ide_communication.py"], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.DEVNULL, creationflags=self.CREATE_NO_WINDOW)
-        #time.sleep(0.5)
-        #self.ev3_sender.send_message("LIST_DIRECTORY /home/robot")
-        #self.read_thread = threading.Thread(target=self.read_frames, daemon=True)
-        #self.read_thread.start()
 
 instance = EV3Handler()
 instance.start_session()

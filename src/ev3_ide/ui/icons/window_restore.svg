@@ -2,13 +2,14 @@
      width="16" height="16"
      viewBox="0 0 16 16">
     <path
-        d="M4 5H11V12H4V5Z"
+        d="M5 5H 10Q 11 5 11 6V 11Q11 12 10 12H 5Q4 12 4 11V6Q4 5 5 5Z"
         fill="none"
         stroke="#ffffff"
         stroke-width="1"/>
     <path
-        d="M13 10V3H6"
+        d="M13 9.5V5Q13 3 11 3H6.7"
         fill="none"
         stroke="#ffffff"
-        stroke-width="1"/>
+        stroke-width="1"
+        stroke-linecap="round"/>
 </svg>

@@ -12,6 +12,11 @@ QMainWindow#main_window {
 
 /* Title-Bar */
 
+QPushButton#run_button {
+    color: white;
+    background-color: #198185;
+}
+
 QPushButton#minimize_button {
     border: 0px;
     border-radius: 0px;

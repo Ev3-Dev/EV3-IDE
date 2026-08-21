@@ -22,6 +22,8 @@ class IDETitleBar(QWidget):
         self.logo = QLabel("EV3")
 
         self.run_button = QPushButton("Run")
+        self.run_button.setObjectName("run_button")
+        self.run_button.setFixedSize(80, 30)
 
         # Windows-Buttons
         self.minimize_button = QPushButton()
