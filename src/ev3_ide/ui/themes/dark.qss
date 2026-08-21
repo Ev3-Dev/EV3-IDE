@@ -57,48 +57,51 @@ QPushButton#close_button:hover {
 
 QTabWidget#editor_tabs QTabBar {
     background-color: #191a1c;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    /* background-color: #191a1c; */
 }
 
 QTabWidget#editor_tabs QTabBar::tab {
-    border: 0px;
-    border-radius: 0px;
+    border: 3px solid #191a1c;
+    border-radius: 7px;
+
+    margin-right: -3px;
 
     font-size: 13px;
     font-family: "Segoe UI", sans-serif;
     font-weight: 510;
 
-    height: 34px;
-    padding: 0px 35px 0px 10px;
+    height: 30px;
+    padding: 0px 30px 1px 7px;
     min-width: 60px;
     max-width: 220px;
 }
 
+
 QTabWidget#editor_tabs QTabBar::tab:selected {
     color: #ffffff;
-    background: #252526;
-    border-bottom: 3px solid #185FA5;
+    background-color: #252526;
 }
 
 QTabWidget#editor_tabs QTabBar::tab:!selected {
     color: #d4d4d4;
-    background: #191a1c;
-    border-bottom: 3px solid #191a1c;
+    background-color: #191a1c;
+}
+
+QTabWidget#editor_tabs QTabBar::tab:!selected:hover {
+    background-color: #202021;
 }
 
 QTabWidget#editor_tabs QTabBar::close-button {
     subcontrol-origin: padding;
     subcontrol-position: right;
     image: url("{ICON_PATH}/close.svg");
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 QTabWidget#editor_tabs QTabBar::close-button:hover {
     background-color: #e81123;
-}
-
-QTabWidget#editor_tabs::pane {
-    border: 0px;
-    background-color: #0d0d60;
 }
 
 /* -------- Code-Editor -------- */
@@ -108,7 +111,46 @@ QPlainTextEdit#code_editor {
     color: #d4d4d4;
     font-family: 'JetBrains Mono NL';
     font-size: 14px;
-    border: 0px;
+    border: 1px solid #191a1c;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+/* -------- Bottom-Tab-Leiste -------- */
+
+QTabWidget#bottom_tabs QTabBar {
+    background-color: #191a1c;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+QTabWidget#bottom_tabs QTabBar::tab {
+    border: 3px solid #191a1c;
+    border-radius: 7px;
+
+    margin-right: -3px;
+
+    font-size: 13px;
+    font-family: "Segoe UI", sans-serif;
+    font-weight: 510;
+
+    height: 22px;
+    padding: 0px 5px 1px 5px;
+    width: 60px;
+}
+
+QTabWidget#bottom_tabs QTabBar::tab:selected {
+    color: #ffffff;
+    background-color: #252526;
+}
+
+QTabWidget#bottom_tabs QTabBar::tab:!selected {
+    color: #d4d4d4;
+    background-color: #191a1c;
+}
+
+QTabWidget#bottom_tabs QTabBar::tab:!selected:hover {
+    background-color: #202021;
 }
 
 /* -------- Konsole -------- */
@@ -118,8 +160,9 @@ QPlainTextEdit#console {
     color: #d4d4d4;
     font-family: 'JetBrains Mono NL';
     font-size: 14px;
-    border: 0px;
-    border-radius: 5px;
+    border: 1px solid #191a1c;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
 
 QPlainTextEdit#terminal {
@@ -127,21 +170,9 @@ QPlainTextEdit#terminal {
     color: #d4d4d4;
     font-family: 'JetBrains Mono NL';
     font-size: 14px;
-    border: 0px;
-    border-radius: 5px;
-}
-
-QTabWidget#bottom_tabs QTabBar {
-    background-color: #191a1c;
-}
-
-QTabWidget#bottom_tabs QTabBar::tab {
-    background: #191a1c;
-    color: #4e1212;
-}
-
-QTabWidget#bottom_tabs QTabBar::tab:selected {
-    background: #FF5500;
+    border: 1px solid #191a1c;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
 
 /* -------- Sidebar -------- */
