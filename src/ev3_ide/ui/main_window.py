@@ -82,19 +82,23 @@ class MainWindow(QMainWindow):
         central = QWidget()
         self.setCentralWidget(central)
         root = QVBoxLayout(central)
-        root.setContentsMargins(5, 0, 5, 5)
+        root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
+        root_content = QVBoxLayout()
+        root_content.setContentsMargins(5, 2, 5, 5)
 
         # Toolbar
         self.title_bar = IDETitleBar(self)
         self.title_bar.minimize_button.clicked.connect(self.showMinimized)
-        self.title_bar.maximize_button.clicked.connect(lambda: (self.showNormal() if self.isMaximized() else self.showMaximized()))
+        self.title_bar.maximize_button.clicked.connect(self.toggle_maximized)
         self.title_bar.close_button.clicked.connect(self.close)
         root.addWidget(self.title_bar)
 
+        root.addLayout(root_content)
+
         # Haupt-Splitter
         main_splitter = QSplitter(Qt.Orientation.Horizontal)
-        root.addWidget(main_splitter, stretch=1)
+        root_content.addWidget(main_splitter, stretch=1)
 
         # Linke Sidebar
         self.left_sidebar = LeftSidebar()
@@ -114,8 +118,29 @@ class MainWindow(QMainWindow):
         main_splitter.setSizes([150, 850])
         main_splitter.setCollapsible(0, False)
 
+        self.showMaximized()
+
         self.editor_tabs.open_file("/home/robot/projekt/main.py", "")
         self.editor_tabs.open_file("/home/robot/projekt/fahrsteuerung.py","")
+
+    def _refresh_button_state(self):
+        button = self.title_bar.maximize_button
+        button.setAttribute(Qt.WidgetAttribute.WA_UnderMouse, False)
+        button.update()
+
+    def toggle_maximized(self):
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
+        self.update_maximize_icon()
+        QTimer.singleShot(0, self._refresh_button_state)
+
+    def update_maximize_icon(self):
+        if self.isMaximized():
+            self.title_bar.set_maximize_icon("window_restore")
+        else:
+            self.title_bar.set_maximize_icon("window_maximize")
 
     def _refresh_window_frame(self):
         hwnd = wintypes.HWND(int(self.winId()))
@@ -123,6 +148,7 @@ class MainWindow(QMainWindow):
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.WindowStateChange:
+            self.update_maximize_icon()
             QTimer.singleShot(0, self._refresh_window_frame)
         super().changeEvent(event)
 

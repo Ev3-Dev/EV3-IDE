@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="16" height="16"
+     viewBox="0 0 16 16">
+    <path
+        d="M4 5H11V12H4V5Z"
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="1"/>
+    <path
+        d="M13 10V3H6"
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="1"/>
+</svg>

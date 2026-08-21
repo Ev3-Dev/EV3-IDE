@@ -10,6 +10,44 @@ QMainWindow#main_window {
 
 /* ================ Spezifische Widgets ================ */
 
+/* Title-Bar */
+
+QPushButton#minimize_button {
+    border: 0px;
+    border-radius: 0px;
+
+    color: white;
+    background-color: #26282c;
+}
+
+QPushButton#minimize_button:hover {
+    background-color: #3a3b3f;
+}
+
+QPushButton#maximize_button {
+    border: 0px;
+    border-radius: 0px;
+
+    color: white;
+    background-color: #26282c;
+}
+
+QPushButton#maximize_button:hover {
+    background-color: #3a3b3f;
+}
+
+QPushButton#close_button {
+    border: 0px;
+    border-radius: 0px;
+
+    color: white;
+    background-color: #26282c;
+}
+
+QPushButton#close_button:hover {
+    background-color: #c42b1c;
+}
+
 /* -------- Editor-Tab-Leiste -------- */
 
 QTabWidget#editor_tabs QTabBar {
