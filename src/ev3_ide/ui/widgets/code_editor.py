@@ -11,7 +11,9 @@ class CodeEditor(QPlainTextEdit):
         super().__init__(parent)
 
         self.setObjectName("code_editor")
+        self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         self.setFont(self.create_font_from_ttf(resource_path("ui/fonts/IdeMono.ttf")))
+        self.setTabStopDistance(4 * self.fontMetrics().horizontalAdvance(" "))
 
     @classmethod
     def create_font_from_ttf(cls, ttf_path, size=10):
