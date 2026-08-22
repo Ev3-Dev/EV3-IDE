@@ -81,7 +81,7 @@ QTabWidget#editor_tabs QTabBar::tab {
 
 QTabWidget#editor_tabs QTabBar::tab:selected {
     color: #ffffff;
-    background-color: #252526;
+    background-color: #353539;
 }
 
 QTabWidget#editor_tabs QTabBar::tab:!selected {
@@ -109,12 +109,12 @@ QTabWidget#editor_tabs QTabBar::close-button:hover {
 QPlainTextEdit#code_editor {
     background-color: #1e1f22;
     color: #d4d4d4;
-    font-family: 'JetBrains Mono NL';
-    font-size: 14px;
     border: 1px solid #191a1c;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
+
+
 
 /* -------- Bottom-Tab-Leiste -------- */
 
@@ -141,7 +141,7 @@ QTabWidget#bottom_tabs QTabBar::tab {
 
 QTabWidget#bottom_tabs QTabBar::tab:selected {
     color: #ffffff;
-    background-color: #252526;
+    background-color: #353539;
 }
 
 QTabWidget#bottom_tabs QTabBar::tab:!selected {
@@ -158,8 +158,6 @@ QTabWidget#bottom_tabs QTabBar::tab:!selected:hover {
 QPlainTextEdit#console {
     background-color: #1e1f22;
     color: #d4d4d4;
-    font-family: 'JetBrains Mono NL';
-    font-size: 14px;
     border: 1px solid #191a1c;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
@@ -168,8 +166,6 @@ QPlainTextEdit#console {
 QPlainTextEdit#terminal {
     background-color: #1e1f22;
     color: #d4d4d4;
-    font-family: 'JetBrains Mono NL';
-    font-size: 14px;
     border: 1px solid #191a1c;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;

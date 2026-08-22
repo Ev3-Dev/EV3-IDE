@@ -1,5 +1,6 @@
-from PySide6.QtWidgets import QTabWidget, QPlainTextEdit
+from PySide6.QtWidgets import QTabWidget
 from PySide6.QtCore import Signal
+from ev3_ide.ui.widgets.code_editor import CodeEditor
 
 class EditorTabs(QTabWidget):
     file_changed = Signal(str, str)  # Pfad, Inhalt
@@ -20,13 +21,9 @@ class EditorTabs(QTabWidget):
                 self.setCurrentIndex(i)
                 return
 
-        editor = self._make_editor()
+        editor = CodeEditor()
         editor.setPlainText(content)
-        editor.textChanged.connect(
-            lambda: self.file_changed.emit(
-                path, editor.toPlainText()
-            )
-        )
+        editor.textChanged.connect(lambda: self.file_changed.emit(path, editor.toPlainText()))
 
         name  = path.split("/")[-1]
         index = self.addTab(editor, name)
@@ -53,13 +50,4 @@ class EditorTabs(QTabWidget):
         self.removeTab(index)
         self._paths.pop(index, None)
         # Indizes neu aufbauen
-        self._paths = {
-            i: p for i, (_, p)
-            in enumerate(sorted(self._paths.items()))
-        }
-
-    def _make_editor(self) -> QPlainTextEdit:
-        editor = QPlainTextEdit()
-        editor.setObjectName("code_editor")
-        editor.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
-        return editor
+        self._paths = {i: p for i, (_, p) in enumerate(sorted(self._paths.items()))}
