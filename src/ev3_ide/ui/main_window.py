@@ -98,6 +98,8 @@ class MainWindow(QMainWindow):
 
         # Haupt-Splitter
         main_splitter = QSplitter(Qt.Orientation.Horizontal)
+        main_splitter.setHandleWidth(5)
+        main_splitter.splitterMoved.connect(lambda pos, index: self.update_splitter_handle(main_splitter))
         root_content.addWidget(main_splitter, stretch=1)
 
         # Linke Sidebar
@@ -107,6 +109,8 @@ class MainWindow(QMainWindow):
 
         # Mitte: Editor + Konsole
         center_splitter = QSplitter(Qt.Orientation.Vertical)
+        center_splitter.setHandleWidth(5)
+        center_splitter.splitterMoved.connect(lambda pos, index: self.update_splitter_handle(center_splitter))
         self.editor_tabs = EditorTabs()
         self.bottom_tabs = BottomTabs()
         self.bottom_tabs.command_entered.connect(self.command_entered)
@@ -122,6 +126,13 @@ class MainWindow(QMainWindow):
 
         self.editor_tabs.open_file("/home/robot/projekt/main.py", "")
         self.editor_tabs.open_file("/home/robot/projekt/fahrsteuerung.py","")
+
+    def update_splitter_handle(self, splitter):
+        sizes = splitter.sizes()
+        if 0 in sizes:
+            splitter.setHandleWidth(0)
+        else:
+            splitter.setHandleWidth(5)
 
     def _refresh_button_state(self):
         button = self.title_bar.maximize_button
