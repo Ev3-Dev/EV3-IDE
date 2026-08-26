@@ -189,10 +189,6 @@ QComboBox#left_sidebar_dropdown {
 
 /* Content-Area */
 
-QTreeWidget#file_tree {
-    background-color: #191a1c;
-}
-
 QListWidget#lib_manager_list {
     background: #191a1c;
     border: 1px solid #555;

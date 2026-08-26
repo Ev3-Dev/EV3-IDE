@@ -130,6 +130,8 @@ class MainWindow(QMainWindow):
         self.ev3_handler.ev3_disconnected.connect(lambda: self.title_bar.set_connection_state("Disconnected"))
         self.ev3_handler.dispatcher.dir_listing_received.connect(self.left_sidebar.update_directory)
 
+        self.ev3_handler.dispatcher.dir_listing_received.connect(self.left_sidebar.update_directory)
+
         self.editor_tabs.open_file("/home/robot/projekt/main.py", "")
         self.editor_tabs.open_file("/home/robot/projekt/fahrsteuerung.py","")
 
