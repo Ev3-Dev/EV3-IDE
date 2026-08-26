@@ -38,3 +38,6 @@ class LeftSidebar(QFrame):
         self.page_container.addWidget(self.lib_manager)
 
         self.dropdown.currentIndexChanged.connect(self.page_container.setCurrentIndex)
+
+    def update_directory(self, message):
+        pass

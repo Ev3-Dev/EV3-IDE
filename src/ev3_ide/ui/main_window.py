@@ -9,6 +9,8 @@ from ev3_ide.ui.widgets.left_sidebar import LeftSidebar
 from ev3_ide.ui.widgets.editor_tabs import EditorTabs
 from ev3_ide.ui.widgets.bottom_tabs import BottomTabs
 
+from ev3_ide.core.ev3_handler import EV3Handler
+
 
 WM_NCHITTEST = 0x0084
 WM_NCCALCSIZE = 0x0083
@@ -77,7 +79,6 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setObjectName("main_window")
         self.setMinimumSize(1200, 750)
-        # self.showMaximized()
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -104,7 +105,6 @@ class MainWindow(QMainWindow):
 
         # Linke Sidebar
         self.left_sidebar = LeftSidebar()
-        self.left_sidebar.file_tree.file_opened.connect(self.file_open_requested)
         main_splitter.addWidget(self.left_sidebar)
 
         # Mitte: Editor + Konsole
@@ -123,6 +123,12 @@ class MainWindow(QMainWindow):
         main_splitter.setCollapsible(0, False)
 
         self.showMaximized()
+
+        self.ev3_handler = EV3Handler()
+        self.ev3_handler.start_session()
+        self.ev3_handler.ev3_connected.connect(lambda: self.title_bar.set_connection_state("Connected"))
+        self.ev3_handler.ev3_disconnected.connect(lambda: self.title_bar.set_connection_state("Disconnected"))
+        self.ev3_handler.dispatcher.dir_listing_received.connect(self.left_sidebar.update_directory)
 
         self.editor_tabs.open_file("/home/robot/projekt/main.py", "")
         self.editor_tabs.open_file("/home/robot/projekt/fahrsteuerung.py","")

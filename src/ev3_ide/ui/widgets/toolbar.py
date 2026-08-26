@@ -11,9 +11,15 @@ class IDETitleBar(QWidget):
 
         self.setFixedHeight(40)
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(5, 0, 0, 0)
-        layout.setSpacing(0)
+        self.ev3_state = "Disconnected"
+
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(5, 0, 0, 0)
+        main_layout.setSpacing(5)
+
+        windows_buttons_layout = QHBoxLayout()
+        windows_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        windows_buttons_layout.setSpacing(0)
 
         self.maximize_icon = QIcon(resource_path("ui/icons/window_maximize.svg"))
         self.restore_icon = QIcon(resource_path("ui/icons/window_restore.svg"))
@@ -23,7 +29,10 @@ class IDETitleBar(QWidget):
 
         self.run_button = QPushButton("Run")
         self.run_button.setObjectName("run_button")
-        self.run_button.setFixedSize(80, 30)
+        self.run_button.setFixedSize(90, 30)
+
+        self.ev3_connection_label = QLabel("Disconnected")
+        self.ev3_connection_label.setObjectName("ev3_connection_label")
 
         # Windows-Buttons
         self.minimize_button = QPushButton()
@@ -44,12 +53,21 @@ class IDETitleBar(QWidget):
         self.close_button.setIcon(QIcon(resource_path("ui/icons/window_close.svg")))
         self.close_button.setIconSize(QSize(18, 18))
 
-        layout.addWidget(self.logo)
-        layout.addWidget(self.run_button)
-        layout.addStretch()
-        layout.addWidget(self.minimize_button)
-        layout.addWidget(self.maximize_button)
-        layout.addWidget(self.close_button)
+        windows_buttons_layout.addWidget(self.minimize_button)
+        windows_buttons_layout.addWidget(self.maximize_button)
+        windows_buttons_layout.addWidget(self.close_button)
+
+        main_layout.addWidget(self.logo)
+        main_layout.addWidget(self.run_button)
+        main_layout.addStretch()
+        main_layout.addWidget(self.ev3_connection_label)
+        main_layout.addStretch()
+        main_layout.addLayout(windows_buttons_layout)
+
+    def set_connection_state(self, state):
+        if state != self.ev3_state:
+            self.ev3_state = state
+            self.ev3_connection_label.setText(state)
 
     def set_maximize_icon(self, icon_name):
         self.maximize_button.setIcon(QIcon(resource_path(f"ui/icons/{icon_name}.svg")))
