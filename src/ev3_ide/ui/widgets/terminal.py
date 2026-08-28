@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QPlainTextEdit
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QFont, QFontDatabase
 from ev3_ide.core.resources import resource_path
 
@@ -15,7 +15,7 @@ class Terminal(QPlainTextEdit):
         self.setObjectName("terminal")
         self._prompt = "robot@ev3dev:~$ "
         self.appendPlainText(self._prompt)
-        self.setFont(self.create_font_from_ttf(resource_path("ui/fonts/IdeMono.ttf")))
+        self.setFont(self.create_font_from_ttf(resource_path("ui/fonts/IdeMonoV3.ttf")))
 
     @classmethod
     def create_font_from_ttf(cls, ttf_path, size=10):
@@ -30,7 +30,6 @@ class Terminal(QPlainTextEdit):
         return QFont(cls._font_family, size)
 
     def keyPressEvent(self, event):
-        from PySide6.QtCore import Qt
         if event.key() == Qt.Key.Key_Return:
             text  = self.toPlainText()
             cmd   = text.split(self._prompt)[-1].strip()

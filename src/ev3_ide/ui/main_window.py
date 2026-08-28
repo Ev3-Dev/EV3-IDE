@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
         center_splitter.setSizes([600, 200])
         main_splitter.addWidget(center_splitter)
 
-        main_splitter.setSizes([150, 850])
+        main_splitter.setSizes([100, 1200])
         main_splitter.setCollapsible(0, False)
 
         self.showMaximized()

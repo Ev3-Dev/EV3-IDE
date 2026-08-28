@@ -12,7 +12,7 @@ class Console(QPlainTextEdit):
         self.setObjectName("console")
         self.setReadOnly(True)
         self.setMaximumBlockCount(1000)
-        self.setFont(self.create_font_from_ttf(resource_path("ui/fonts/IdeMono.ttf")))
+        self.setFont(self.create_font_from_ttf(resource_path("ui/fonts/IdeMonoV3.ttf")))
 
     @classmethod
     def create_font_from_ttf(cls, ttf_path, size=10):

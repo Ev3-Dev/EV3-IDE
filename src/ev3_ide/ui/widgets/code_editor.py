@@ -1,6 +1,21 @@
-from PySide6.QtWidgets import QPlainTextEdit
-from PySide6.QtGui import QFont, QFontDatabase
+from PySide6.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
+from PySide6.QtGui import QFont, QFontDatabase, QPainter, QColor, QTextFormat
+from PySide6.QtCore import Qt, QSize
+
 from ev3_ide.core.resources import resource_path
+
+
+class LineNumberArea(QWidget):
+    def __init__(self, editor):
+        super().__init__(editor)
+        self.setObjectName("line_number_area")
+        self.code_editor = editor
+
+    def sizeHint(self):
+        return QSize(self.code_editor.line_number_area_width(), 0)
+
+    def paintEvent(self, event):
+        self.code_editor.paint_line_numbers(event)
 
 
 class CodeEditor(QPlainTextEdit):
@@ -12,8 +27,20 @@ class CodeEditor(QPlainTextEdit):
 
         self.setObjectName("code_editor")
         self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
-        self.setFont(self.create_font_from_ttf(resource_path("ui/fonts/IdeMono.ttf")))
+        self.setFont(self.create_font_from_ttf(resource_path("ui/fonts/IdeMonoV3.ttf")))
         self.setTabStopDistance(4 * self.fontMetrics().horizontalAdvance(" "))
+
+        self.line_number_padding_left = -16
+
+        self.line_number_area = LineNumberArea(self)
+        self.line_number_area.setObjectName("line_number_area")
+        self.line_number_area.setFont(self.create_font_from_ttf(resource_path("ui/fonts/IdeMonoV3.ttf"), size=8))
+        self.blockCountChanged.connect(self.update_line_number_area_width)
+        self.updateRequest.connect(self.update_line_number_area)
+        self.cursorPositionChanged.connect(self.line_number_area.update)
+        self.cursorPositionChanged.connect(self.highlight_current_line)
+        self.update_line_number_area_width()
+
 
     @classmethod
     def create_font_from_ttf(cls, ttf_path, size=10):
@@ -26,3 +53,52 @@ class CodeEditor(QPlainTextEdit):
                 return QFont()
             cls._font_family = font_families[0]
         return QFont(cls._font_family, size)
+
+    def line_number_area_width(self):
+        digits = len(str(max(1, self.blockCount())))
+        space = 15
+        return space + self.fontMetrics().horizontalAdvance("9") * digits + space
+
+    def update_line_number_area_width(self):
+        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
+
+    def update_line_number_area(self, rect, dy):
+        if dy:
+            self.line_number_area.scroll(0, dy)
+        else:
+            self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
+        if rect.contains(self.viewport().rect()):
+            self.update_line_number_area_width()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        cr = self.contentsRect()
+        self.line_number_area.setGeometry(cr.left(), cr.top(), self.line_number_area_width(), cr.height())
+
+    def paint_line_numbers(self, event):
+        painter = QPainter(self.line_number_area)
+        background_color = self.line_number_area.palette().window().color()
+        painter.fillRect(event.rect(), background_color)
+        block = self.firstVisibleBlock()
+        block_number = block.blockNumber()
+        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+        bottom = top + self.blockBoundingRect(block).height()
+        while block.isValid() and top <= event.rect().bottom():
+            if block.isVisible() and bottom >= event.rect().top():
+                number = str(block_number + 1)
+                painter.setPen(QColor("#888888"))
+                painter.drawText(self.line_number_padding_left, int(top) + 2, self.line_number_area.width() - 8, int(self.fontMetrics().height()), Qt.AlignmentFlag.AlignRight, number)
+            block = block.next()
+            top = bottom
+            bottom = top + self.blockBoundingRect(block).height()
+            block_number += 1
+        painter.setPen(QColor("#313438"))
+        painter.drawLine(self.line_number_area.width() - 1, event.rect().top(), self.line_number_area.width() - 1, event.rect().bottom())
+
+    def highlight_current_line(self):
+        selection = QTextEdit.ExtraSelection()
+        selection.format.setBackground(QColor("#2a2d2e"))
+        selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+        selection.cursor = self.textCursor()
+        selection.cursor.clearSelection()
+        self.setExtraSelections([selection])

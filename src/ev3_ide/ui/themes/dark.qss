@@ -114,7 +114,9 @@ QPlainTextEdit#code_editor {
     border-bottom-right-radius: 5px;
 }
 
-
+#line_number_area {
+    background-color: #1e1f22;
+}
 
 /* -------- Bottom-Tab-Leiste -------- */
 
@@ -188,6 +190,38 @@ QComboBox#left_sidebar_dropdown {
 }
 
 /* Content-Area */
+
+
+QWidget#files_widget {
+    background: #191a1c;
+}
+
+QScrollArea#files_scroll_area {
+    border: none;
+    background: #191a1c;
+}
+
+QScrollArea#files_viewport {
+    background: #191a1c;
+}
+
+QWidget#files_content {
+    background: #191a1c;
+}
+
+QWidget#file_item {
+    background: #67c820;
+    border-radius: 6px;
+}
+
+QWidget#file_item:hover {
+    background: #1c5b87;
+}
+
+QLabel#file_item_name {
+    color: #d4d4d4;
+}
+
 
 QListWidget#lib_manager_list {
     background: #191a1c;

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 
 class FilesWidget(QWidget):
     def __init__(self, parent=None):
@@ -11,9 +11,12 @@ class FilesWidget(QWidget):
         layout.setContentsMargins(4, 4, 4, 4)
 
         self.scroll_area = QScrollArea()
+        self.scroll_area.setObjectName("files_scroll_area")
         self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.viewport().setObjectName("files_viewport")
 
         self.content = QWidget()
+        self.content.setObjectName("files_content")
         self.file_layout = QVBoxLayout(self.content)
 
         self.scroll_area.setWidget(self.content)
@@ -46,6 +49,9 @@ class FileItem(QWidget):
     def __init__(self, name, item_type, executable, parent=None):
         super().__init__(parent)
 
+        self.setObjectName("file_item")
+        self.setAttribute(Qt.WA_Hover, True)
+
         self.name = name
         self.item_type = item_type
         self.executable = executable
@@ -54,7 +60,10 @@ class FileItem(QWidget):
         layout.setContentsMargins(6, 4, 6, 4)
 
         self.icon = QLabel("📁" if item_type == "directory" else "📄")
+        self.icon.setAttribute(Qt.WA_TransparentForMouseEvents, True)
         self.name_label = QLabel(name + " , " + ("Yes" if self.executable else "No"))
+        self.name_label.setObjectName("file_item_name")
+        self.name_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
 
         layout.addWidget(self.icon)
         layout.addWidget(self.name_label)
