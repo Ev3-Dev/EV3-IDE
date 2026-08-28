@@ -60,7 +60,7 @@ class CodeEditor(QPlainTextEdit):
         return space + self.fontMetrics().horizontalAdvance("9") * digits + space
 
     def update_line_number_area_width(self):
-        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
+        self.setViewportMargins(self.line_number_area_width()-4, 0, 0, 0)
 
     def update_line_number_area(self, rect, dy):
         if dy:
@@ -78,13 +78,17 @@ class CodeEditor(QPlainTextEdit):
     def paint_line_numbers(self, event):
         painter = QPainter(self.line_number_area)
         background_color = self.line_number_area.palette().window().color()
+        current_line_color = QColor("#26282e")
         painter.fillRect(event.rect(), background_color)
+        current_block = self.textCursor().block()
         block = self.firstVisibleBlock()
         block_number = block.blockNumber()
         top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
         bottom = top + self.blockBoundingRect(block).height()
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
+                if block == current_block:
+                    painter.fillRect(0, int(top), self.line_number_area.width(), self.fontMetrics().height(), current_line_color)
                 number = str(block_number + 1)
                 painter.setPen(QColor("#888888"))
                 painter.drawText(self.line_number_padding_left, int(top) + 2, self.line_number_area.width() - 8, int(self.fontMetrics().height()), Qt.AlignmentFlag.AlignRight, number)
@@ -97,7 +101,7 @@ class CodeEditor(QPlainTextEdit):
 
     def highlight_current_line(self):
         selection = QTextEdit.ExtraSelection()
-        selection.format.setBackground(QColor("#2a2d2e"))
+        selection.format.setBackground(QColor("#26282e"))
         selection.format.setProperty(QTextFormat.FullWidthSelection, True)
         selection.cursor = self.textCursor()
         selection.cursor.clearSelection()
