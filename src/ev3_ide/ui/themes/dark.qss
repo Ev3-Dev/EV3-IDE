@@ -209,15 +209,6 @@ QWidget#files_content {
     background: #191a1c;
 }
 
-QWidget#file_item {
-    background: #67c820;
-    border-radius: 6px;
-}
-
-QWidget#file_item:hover {
-    background: #1c5b87;
-}
-
 QLabel#file_item_name {
     color: #d4d4d4;
 }

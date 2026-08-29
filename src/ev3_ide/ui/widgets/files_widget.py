@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
+from PySide6.QtGui import QPainter, QColor
 from PySide6.QtCore import Signal, Qt
 
 class FilesWidget(QWidget):
@@ -45,12 +46,16 @@ class FilesWidget(QWidget):
 
 class FileItem(QWidget):
     clicked = Signal()
+    right_clicked = Signal()
 
     def __init__(self, name, item_type, executable, parent=None):
         super().__init__(parent)
 
         self.setObjectName("file_item")
         self.setAttribute(Qt.WA_Hover, True)
+        self.setMouseTracking(True)
+
+        self._hovered = False
 
         self.name = name
         self.item_type = item_type
@@ -68,3 +73,29 @@ class FileItem(QWidget):
         layout.addWidget(self.icon)
         layout.addWidget(self.name_label)
         layout.addStretch()
+
+    def enterEvent(self, event):
+        self._hovered = True
+        self.update()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self._hovered = False
+        self.update()
+        super().leaveEvent(event)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        if self._hovered:
+            painter.setBrush(QColor("#2a2d2e"))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawRoundedRect(self.rect(), 4, 4)
+        super().paintEvent(event)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        elif event.button() == Qt.MouseButton.RightButton:
+            self.right_clicked.emit(event.globalPosition().toPoint())
+        super().mousePressEvent(event)

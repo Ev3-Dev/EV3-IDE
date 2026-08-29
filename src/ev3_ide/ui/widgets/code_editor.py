@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
 from PySide6.QtGui import QFont, QFontDatabase, QPainter, QColor, QTextFormat
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
 
 from ev3_ide.core.resources import resource_path
 
@@ -41,6 +41,15 @@ class CodeEditor(QPlainTextEdit):
         self.cursorPositionChanged.connect(self.highlight_current_line)
         self.update_line_number_area_width()
 
+        # Smoothes Scrollen
+        self.friction = 0.80
+        self.sensitivity = 0.0075
+        self.velocity = 0.0
+        self.precise_value = float(self.verticalScrollBar().value())
+        self.timer = QTimer(self)
+        self.timer.setInterval(8)
+        self.timer.timeout.connect(self.physics_tick)
+        self.verticalScrollBar().valueChanged.connect(self.sync_on_manual_scroll)
 
     @classmethod
     def create_font_from_ttf(cls, ttf_path, size=10):
@@ -106,3 +115,32 @@ class CodeEditor(QPlainTextEdit):
         selection.cursor = self.textCursor()
         selection.cursor.clearSelection()
         self.setExtraSelections([selection])
+
+    # -------- Scrollen --------
+    def sync_on_manual_scroll(self, value):
+        if not self.timer.isActive():
+            self.precise_value = float(value)
+            self.velocity = 0.0
+
+    def wheelEvent(self, event):
+        steps = event.angleDelta().y()
+        self.velocity += -(steps * self.sensitivity)
+        if not self.timer.isActive():
+            self.timer.start()
+        event.accept()
+
+    def physics_tick(self):
+        scrollbar = self.verticalScrollBar()
+        self.velocity *= self.friction
+        if abs(self.velocity) < 0.1:
+            self.velocity = 0.0
+            self.timer.stop()
+            return
+        self.precise_value += self.velocity
+        if self.precise_value < scrollbar.minimum():
+            self.precise_value = float(scrollbar.minimum())
+            self.velocity = 0.0
+        elif self.precise_value > scrollbar.maximum():
+            self.precise_value = float(scrollbar.maximum())
+            self.velocity = 0.0
+        scrollbar.setValue(int(round(self.precise_value)))
