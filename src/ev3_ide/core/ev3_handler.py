@@ -88,13 +88,12 @@ class EV3Handler(QObject):
     def connect_to_agent(self):
         print("TCP-Verbindung zu:", self.ev3_address, self.EV3_AGENT_PORT)
         try:
-            for attempt in range(30):
+            while True:
                 try:
-                    self._socket = socket.create_connection((self.ev3_address, self.EV3_AGENT_PORT), timeout=1.0)
+                    self._socket = socket.create_connection((self.ev3_address, self.EV3_AGENT_PORT), timeout=2)
                     break
-                except (socket.timeout):
+                except socket.timeout:
                     print("Erneut versuchen")
-                    time.sleep(0.5)
             self._socket.settimeout(None)
             print("TCP-Verbindung zum Agent hergestellt.")
             self._receive_thread = threading.Thread(target=self._receive_loop, daemon=True)

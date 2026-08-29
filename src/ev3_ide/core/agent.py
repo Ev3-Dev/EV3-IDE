@@ -6,7 +6,7 @@ import struct
 import os
 
 
-HOST = "0.0.0.0"
+HOST = "::"
 PORT = 5000
 client = None
 
@@ -67,29 +67,33 @@ def handle_message(message):
 
 def main():
     global client
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((HOST, PORT))
-    server.listen(1)
+    server.listen(5)
     print("Agent laeuft auf Port " + str(PORT))
-    try:
-        while True:
+    while True:
+        client = None
+        try:
             print("Warte auf PC-Verbindung...")
             client, address = server.accept()
             print("Verbindung von " + str(address))
-            try:
-                while True:
-                    message = receive_message(client)
-                    print("Empfangen:", message)
-                    response = handle_message(message)
-                    if response is not None:
-                        send_message(client, response)
-            except ConnectionError:
-                print("PC getrennt")
-            finally:
-                client.close()
-    finally:
-        server.close()
+            while True:
+                message = receive_message(client)
+                print("Empfangen:", message)
+                response = handle_message(message)
+                if response is not None:
+                    send_message(client, response)
+        except ConnectionError:
+            print("PC getrennt")
+        except Exception as e:
+            print("Fehler: " + str(e))
+        finally:
+            if client is not None:
+                try:
+                    client.close()
+                except Exception:
+                    pass
 
 
 if __name__ == "__main__":
