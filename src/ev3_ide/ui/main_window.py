@@ -120,7 +120,6 @@ class MainWindow(QMainWindow):
         main_splitter.addWidget(center_splitter)
 
         main_splitter.setSizes([100, 1200])
-        main_splitter.setCollapsible(0, False)
 
         self.showMaximized()
 
@@ -128,12 +127,20 @@ class MainWindow(QMainWindow):
         self.ev3_handler.start_session()
         self.ev3_handler.ev3_connected.connect(lambda: self.title_bar.set_connection_state("Connected"))
         self.ev3_handler.ev3_disconnected.connect(lambda: self.title_bar.set_connection_state("Disconnected"))
-        self.ev3_handler.dispatcher.dir_listing_received.connect(self.left_sidebar.update_directory)
+        self.ev3_handler.directory_updated.connect(self.left_sidebar.update_directory)
 
-        self.ev3_handler.dispatcher.dir_listing_received.connect(self.left_sidebar.update_directory)
+        self.left_sidebar.item_clicked.connect(self.handle_left_clicked)
+        self.left_sidebar.back_requested.connect(self.handle_files_widget_back)
 
-        self.editor_tabs.open_file("/home/robot/projekt/main.py", "")
-        self.editor_tabs.open_file("/home/robot/projekt/fahrsteuerung.py","")
+    # Code-Editor-Logik
+    def handle_left_clicked(self, data):
+        if data["type"] == "file":
+            self.editor_tabs.open_file(data)
+        else:
+            self.ev3_handler.list_dir(data["path"])
+
+    def handle_files_widget_back(self):
+        self.ev3_handler.go_back()
 
     def update_splitter_handle(self, splitter):
         sizes = splitter.sizes()

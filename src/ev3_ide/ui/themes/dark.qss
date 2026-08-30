@@ -114,7 +114,7 @@ QPlainTextEdit#code_editor {
     border-bottom-right-radius: 5px;
 }
 
-#line_number_area {
+QWidget#line_number_area {
     background-color: #1e1f22;
 }
 
@@ -207,6 +207,16 @@ QScrollArea#files_viewport {
 
 QWidget#files_content {
     background: #191a1c;
+}
+
+QFrame#file_item {
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+}
+
+QFrame#file_item:hover {
+    background: #086481;
 }
 
 QLabel#file_item_name {

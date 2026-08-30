@@ -14,20 +14,25 @@ class EditorTabs(QTabWidget):
         self.tabCloseRequested.connect(self._close_tab)
         self._paths: dict[int, str] = {}  # Tab-Index → Remote-Pfad
 
-    def open_file(self, path: str, content: str):
+    def open_file(self, data):
         # Schon offen? Dann nur fokussieren
         for i, p in self._paths.items():
-            if p == path:
+            if p == data["path"]:
                 self.setCurrentIndex(i)
                 return
 
-        editor = CodeEditor()
-        editor.setPlainText(content)
-        editor.textChanged.connect(lambda: self.file_changed.emit(path, editor.toPlainText()))
+        content = ""
 
-        name  = path.split("/")[-1]
+        editor = CodeEditor()
+        if content:
+            editor.setPlainText(content)
+        else:
+            editor.setPlainText("")
+        editor.textChanged.connect(lambda: self.file_changed.emit(data["path"], editor.toPlainText()))
+
+        name  = data["name"]
         index = self.addTab(editor, name)
-        self._paths[index] = path
+        self._paths[index] = data["path"]
         self.setCurrentIndex(index)
 
     def current_content(self) -> str | None:
