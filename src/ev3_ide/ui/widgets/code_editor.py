@@ -43,7 +43,7 @@ class CodeEditor(QPlainTextEdit):
 
         # Smoothes Scrollen
         self.friction = 0.80
-        self.sensitivity = 0.0075
+        self.sensitivity = 0.01
         self.velocity = 0.0
         self.precise_value = float(self.verticalScrollBar().value())
         self.timer = QTimer(self)
