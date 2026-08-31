@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
 from PySide6.QtGui import QFont, QFontDatabase, QPainter, QColor, QTextFormat
-from PySide6.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
+from PySide6.QtCore import Qt, QSize, QTimer
 
 from ev3_ide.core.resources import resource_path
 

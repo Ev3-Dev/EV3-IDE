@@ -9,6 +9,8 @@ class LeftSidebar(QFrame):
     item_clicked = Signal(dict)
     item_right_clicked = Signal(dict)
     back_requested = Signal()
+    home_requested = Signal()
+    refresh_requested = Signal()
 
     def __init__(self):
         super().__init__()
@@ -19,8 +21,7 @@ class LeftSidebar(QFrame):
         self.dropdown = QComboBox()
         self.dropdown.setObjectName("left_sidebar_dropdown")
         self.dropdown.addItems(["Files", "EV3 State", "Libraries"])
-        self.dropdown.setFixedWidth(20)
-        self.dropdown.setFixedWidth(110)
+        self.dropdown.setFixedSize(110, 30)
 
         # -------- Content-Area --------
         self.buttons_layout = QHBoxLayout()
@@ -28,6 +29,8 @@ class LeftSidebar(QFrame):
         self.buttons_layout.addWidget(self.dropdown)
         self.buttons_layout.addStretch()
         self.dynamic_buttons_layout = QHBoxLayout()
+        self.dynamic_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        self.dynamic_buttons_layout.setSpacing(0)
         self.buttons_layout.addLayout(self.dynamic_buttons_layout)
 
         self.files_widget = FilesWidget()
@@ -61,6 +64,8 @@ class LeftSidebar(QFrame):
         self.files_widget.item_clicked.connect(self.item_clicked)
         self.files_widget.item_right_clicked.connect(self.item_right_clicked)
         self.files_widget.back_requested.connect(self.back_requested)
+        self.files_widget.home_requested.connect(self.home_requested)
+        self.files_widget.refresh_requested.connect(self.refresh_requested)
 
     def update_directory(self, entries):
         self.files_widget.update_directory(entries)

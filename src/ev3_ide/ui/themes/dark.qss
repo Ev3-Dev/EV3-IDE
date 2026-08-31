@@ -189,8 +189,15 @@ QComboBox#left_sidebar_dropdown {
     color: #cdd2d0;
 }
 
-/* Content-Area */
+QPushButton#files_back_button, QPushButton#files_home_button, QPushButton#files_new_button, QPushButton#files_refresh_button {
+    background-color: transparent;
+}
 
+QPushButton#files_back_button:hover, QPushButton#files_home_button:hover, QPushButton#files_new_button:hover, QPushButton#files_refresh_button:hover {
+    background-color: #2e2f30;
+}
+
+/* Content-Area */
 
 QWidget#files_widget {
     background: #191a1c;

@@ -8,14 +8,14 @@ from PySide6.QtCore import QObject, Signal
 class EV3Handler(QObject):
     ev3_connected = Signal()
     ev3_disconnected = Signal()
-    error = Signal(str)
 
     directory_updated = Signal(list)
-    file_read = Signal(str, str)
+    file_loaded = Signal(dict)
     file_written = Signal(str)
 
     output_received = Signal(str)
     process_finished = Signal(int)
+    error = Signal(dict)
 
     def __init__(self):
         super().__init__()
@@ -30,6 +30,8 @@ class EV3Handler(QObject):
         self.ev3_username = "robot"
         self.ev3_address = "ev3dev.local"
         self.ev3_password = "maker"
+
+        self.error.connect(lambda data: print(str(data)))
 
 
     def check_available_and_connect(self):
@@ -87,8 +89,26 @@ class EV3Handler(QObject):
         except Exception as e:
             print(f"Fehler: {e}")
 
-    def read_file(self, path):
-        pass
+    def get_file(self, path):
+        threading.Thread(target=self._get_file, args=(path,), daemon=True).start()
+
+    def _get_file(self, path):
+        try:
+            with self._sftp.open(path, "rb") as file:
+                header = file.read(4096)
+                if header.startswith(b"\x1f\x8b"):
+                    self.error.emit({"path": path, "message": "GZIP-Dateien können nicht als Text geöffnet werden."})
+                    return
+                if b"\x00" in header:
+                    self.error.emit({"path": path, "message": "Die Datei scheint eine Binärdatei zu sein."})
+                    return
+                data = header + file.read()
+            content = data.decode("utf-8")
+            self.file_loaded.emit({"path": path, "content": content})
+        except UnicodeDecodeError:
+            self.error.emit({"path": path, "message": "Die Datei ist keine UTF-8-Textdatei."})
+        except Exception as e:
+            self.error.emit({"path": path, "message": str(e)})
 
     def write_file(self, path, content):
         pass
@@ -108,6 +128,12 @@ class EV3Handler(QObject):
     def go_back(self):
         self.list_dir(posixpath.dirname(self.current_path))
 
+    def go_home(self):
+        self.list_dir("/home/robot")
+
+    def refresh(self):
+        self.list_dir(self.current_path)
+
 
 
     def stop(self):
@@ -121,4 +147,3 @@ class EV3Handler(QObject):
         if self._ssh is not None:
             self._ssh.close()
             self._ssh = None
-        self.ev3_disconnected.emit()
