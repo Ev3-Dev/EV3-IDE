@@ -1,5 +1,6 @@
 import ctypes
 from ctypes import wintypes
+import posixpath
 
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QSplitter, QPushButton
 from PySide6.QtCore import Qt, Signal, QPoint, QEvent, QTimer
@@ -129,7 +130,7 @@ class MainWindow(QMainWindow):
         self.ev3_handler.ev3_connected.connect(lambda: self.title_bar.set_connection_state("Connected"))
         self.ev3_handler.ev3_disconnected.connect(lambda: self.title_bar.set_connection_state("Disconnected"))
         self.ev3_handler.directory_updated.connect(self.left_sidebar.update_directory)
-        self.ev3_handler.file_loaded.connect(self.editor_tabs.open_file)
+        self.ev3_handler.file_loaded.connect(self.open_editor_tab)
 
         self.left_sidebar.item_clicked.connect(self.handle_left_clicked)
         self.left_sidebar.item_right_clicked.connect(self.handle_right_clicked)
@@ -140,13 +141,20 @@ class MainWindow(QMainWindow):
     # Code-Editor-Logik
     def handle_left_clicked(self, data):
         if data["type"] == "file":
-            self.editor_tabs.open_tab(data)
+            if data["path"] in self.editor_tabs.get_paths().values():
+                self.editor_tabs.focus_tab(data["path"])
+                return
             self.ev3_handler.get_file(data["path"])
         else:
             self.ev3_handler.list_dir(data["path"])
 
     def handle_right_clicked(self, data):
         pass
+
+    def open_editor_tab(self, data):
+        data["name"] = posixpath.basename(data["path"])
+        self.editor_tabs.open_tab(data)
+        self.editor_tabs.open_file(data)
 
     def handle_files_widget_back(self):
         self.ev3_handler.go_back()

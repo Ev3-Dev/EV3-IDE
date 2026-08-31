@@ -15,6 +15,9 @@ class EditorTabs(QTabWidget):
         self._paths: dict[int, str] = {}  # Tab-Index → Remote-Pfad
         self.tabBar().tabMoved.connect(self.on_tab_moved)
 
+    def get_paths(self):
+        return self._paths
+
     def on_tab_moved(self, old_index, new_index):
         paths = list(self._paths.values())
         path = paths.pop(old_index)
@@ -46,6 +49,12 @@ class EditorTabs(QTabWidget):
                 if isinstance(editor, CodeEditor):
                     editor.setPlainText(content)
                 self.setCurrentIndex(index)
+                return
+
+    def focus_tab(self, path):
+        for i, p in self._paths.items():
+            if p == path:
+                self.setCurrentIndex(i)
                 return
 
     def current_content(self) -> str | None:

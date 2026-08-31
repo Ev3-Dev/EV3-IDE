@@ -59,7 +59,7 @@ class FilesWidget(QWidget):
         self.refresh_button.setIcon(QIcon(resource_path("ui/icons/refresh.svg")))
         self.refresh_button.setFixedSize(30, 30)
         self.refresh_button.setObjectName("files_refresh_button")
-        self.refresh_button.clicked.connect(self.refresh_requested)
+        self.refresh_button.clicked.connect(self.refresh)
 
         # Content-Area
         layout = QVBoxLayout(self)
@@ -82,6 +82,10 @@ class FilesWidget(QWidget):
 
     def get_buttons_layout_widget(self):
         return [self.back_button, self.home_button, self.new_button, self.refresh_button]
+
+    def refresh(self):
+        self.scroll_area.verticalScrollBar().setValue(0)
+        self.refresh_requested.emit()
 
     def update_directory(self, entries):
         # Alte Einträge entfernen
