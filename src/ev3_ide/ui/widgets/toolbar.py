@@ -17,6 +17,10 @@ class IDETitleBar(QWidget):
         main_layout.setContentsMargins(5, 0, 0, 0)
         main_layout.setSpacing(5)
 
+        ev3_layout = QHBoxLayout()
+        ev3_layout.setContentsMargins(0, 0, 0, 0)
+        ev3_layout.setSpacing(5)
+
         windows_buttons_layout = QHBoxLayout()
         windows_buttons_layout.setContentsMargins(0, 0, 0, 0)
         windows_buttons_layout.setSpacing(0)
@@ -31,8 +35,15 @@ class IDETitleBar(QWidget):
         self.run_button.setObjectName("run_button")
         self.run_button.setFixedSize(90, 30)
 
-        self.ev3_connection_label = QLabel("Disconnected")
+        # EV3-Layout
+        self.ev3_connection_label = QLabel("• Disconnected")
         self.ev3_connection_label.setObjectName("ev3_connection_label")
+
+        self.ev3_battery_label = QLabel("Battery: -")
+        self.ev3_battery_label.setObjectName("ev3_battery_label")
+
+        ev3_layout.addWidget(self.ev3_connection_label)
+        ev3_layout.addWidget(self.ev3_battery_label)
 
         # Windows-Buttons
         self.minimize_button = QPushButton()
@@ -60,7 +71,7 @@ class IDETitleBar(QWidget):
         main_layout.addWidget(self.logo)
         main_layout.addWidget(self.run_button)
         main_layout.addStretch()
-        main_layout.addWidget(self.ev3_connection_label)
+        main_layout.addLayout(ev3_layout)
         main_layout.addStretch()
         main_layout.addLayout(windows_buttons_layout)
 
@@ -68,6 +79,11 @@ class IDETitleBar(QWidget):
         if state != self.ev3_state:
             self.ev3_state = state
             self.ev3_connection_label.setText(state)
+
+    def set_battery_state(self, data):
+        state = data["voltage_now"]
+        print(f"Battery updated: {state}")
+        self.ev3_battery_label.setText(f"Battery: {state}")
 
     def set_maximize_icon(self, icon_name):
         self.maximize_button.setIcon(QIcon(resource_path(f"ui/icons/{icon_name}.svg")))

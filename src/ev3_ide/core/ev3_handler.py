@@ -2,7 +2,116 @@ import threading
 import paramiko
 import stat
 import posixpath
+import queue
+import time
 from PySide6.QtCore import QObject, Signal
+
+
+class SFTPWorker(QObject):
+    directory_updated = Signal(list)
+    file_loaded = Signal(dict)
+    file_written = Signal(str)
+    battery_updated = Signal(dict)
+
+    output_received = Signal(str)
+    process_finished = Signal(int)
+    error = Signal(dict)
+
+    def __init__(self, sftp):
+        super().__init__()
+        self.sftp = sftp
+        self.queue = queue.Queue()
+        self.stop_event = threading.Event()
+        self.current_path = "/home/robot"
+
+    def enqueue(self, function, *args):
+        self.queue.put((function, args))
+
+    def is_connected(self):
+        return self.sftp is not None
+
+    def run(self):
+        self.get_battery()
+        last_battery_check = time.monotonic()
+        while not self.stop_event.is_set():
+            now = time.monotonic()
+            if now - last_battery_check >= 10:
+                self.get_battery()
+                last_battery_check = now
+            try:
+                function, args = self.queue.get(timeout=0.1)
+            except queue.Empty:
+                continue
+            try:
+                function(*args)
+            except Exception as e:
+                self.error.emit({"message": str(e), "type": "error"})
+            finally:
+                self.queue.task_done()
+
+    def stop(self):
+        self.stop_event.set()
+        if self.sftp is not None:
+            self.sftp.close()
+            self.sftp = None
+
+    # -------- SFTP-Aktionen --------
+
+    def list_dir(self, path):
+        if not self.is_connected():
+            return
+        try:
+            self.current_path = path
+            entries = self.sftp.listdir_attr(path)
+            result = []
+            for entry in entries:
+                entry_path = posixpath.join(path, entry.filename)
+                result.append({
+                    "name": entry.filename,
+                    "path": entry_path,
+                    "type": "directory" if stat.S_ISDIR(entry.st_mode) else "file",
+                    "size": entry.st_size,
+                    "mode": entry.st_mode,
+                    "modified": entry.st_mtime,
+                    "executable": bool(entry.st_mode & stat.S_IXUSR),
+                })
+            self.directory_updated.emit(result)
+        except Exception as e:
+            self.error.emit({"message": str(e), "type": "error"})
+
+    def get_file(self, path):
+        if not self.is_connected():
+            return
+        try:
+            with self.sftp.open(path, "rb") as file:
+                header = file.read(4096)
+                if header.startswith(b"\x1f\x8b"):
+                    self.error.emit({"path": path, "message": "GZIP-Dateien können nicht als Text geöffnet werden."})
+                    return
+                if b"\x00" in header:
+                    self.error.emit({"path": path, "message": "Die Datei scheint eine Binärdatei zu sein."})
+                    return
+                data = header + file.read()
+            content = data.decode("utf-8")
+            self.file_loaded.emit({"path": path, "content": content})
+        except UnicodeDecodeError:
+            self.error.emit({"path": path, "message": "Die Datei ist keine UTF-8-Textdatei."})
+        except Exception as e:
+            self.error.emit({"path": path, "message": str(e)})
+
+    def go_back(self):
+        self.list_dir(posixpath.dirname(self.current_path))
+
+    def go_home(self):
+        self.list_dir("/home/robot")
+
+    def refresh(self):
+        self.list_dir(self.current_path)
+
+    def get_battery(self):
+        with self.sftp.open("/sys/class/power_supply/lego-ev3-battery/voltage_now", "r") as file:
+            battery = int(file.read().strip())
+        self.battery_updated.emit({"voltage_now": battery})
 
 
 class EV3Handler(QObject):
@@ -12,6 +121,7 @@ class EV3Handler(QObject):
     directory_updated = Signal(list)
     file_loaded = Signal(dict)
     file_written = Signal(str)
+    battery_updated = Signal(dict)
 
     output_received = Signal(str)
     process_finished = Signal(int)
@@ -23,9 +133,10 @@ class EV3Handler(QObject):
         self._ssh = None
         self._sftp = None
         self._shell = None
+        self.session_thread = None
+        self._worker = None
+        self._worker_thread = None
         self._stop_event = threading.Event()
-
-        self.current_path = "/home/robot"
 
         self.ev3_username = "robot"
         self.ev3_address = "ev3dev.local"
@@ -62,53 +173,33 @@ class EV3Handler(QObject):
                 break
         self._sftp = self._ssh.open_sftp()
         self._shell = self._ssh.invoke_shell()
+
+        self._worker = SFTPWorker(self._sftp)
+        self._worker.directory_updated.connect(self.directory_updated)
+        self._worker.file_loaded.connect(self.file_loaded)
+        self._worker.file_written.connect(self.file_written)
+        self._worker.battery_updated.connect(self.battery_updated)
+        self._worker.output_received.connect(self.output_received)
+        self._worker.process_finished.connect(self.process_finished)
+        self._worker.error.connect(self.error)
+
+        self._worker_thread = threading.Thread(target=self._worker.run, daemon=True)
+
+        self._worker_thread.start()
+
         self.list_dir("/home/robot")
 
 
-    # -------- EV3-Funktionen --------
+    # -------- Öffentliche API --------
     def list_dir(self, path):
-        threading.Thread(target=self._list_dir, args=(path,), daemon=True).start()
-
-    def _list_dir(self, path):
-        try:
-            self.current_path = path
-            entries = self._sftp.listdir_attr(path)
-            result = []
-            for entry in entries:
-                entry_path = posixpath.join(path, entry.filename)
-                result.append({
-                    "name": entry.filename,
-                    "path": entry_path,
-                    "type": "directory" if stat.S_ISDIR(entry.st_mode) else "file",
-                    "size": entry.st_size,
-                    "mode": entry.st_mode,
-                    "modified": entry.st_mtime,
-                    "executable": bool(entry.st_mode & stat.S_IXUSR),
-                })
-            self.directory_updated.emit(result)
-        except Exception as e:
-            print(f"Fehler: {e}")
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.list_dir, path)
 
     def get_file(self, path):
-        threading.Thread(target=self._get_file, args=(path,), daemon=True).start()
-
-    def _get_file(self, path):
-        try:
-            with self._sftp.open(path, "rb") as file:
-                header = file.read(4096)
-                if header.startswith(b"\x1f\x8b"):
-                    self.error.emit({"path": path, "message": "GZIP-Dateien können nicht als Text geöffnet werden."})
-                    return
-                if b"\x00" in header:
-                    self.error.emit({"path": path, "message": "Die Datei scheint eine Binärdatei zu sein."})
-                    return
-                data = header + file.read()
-            content = data.decode("utf-8")
-            self.file_loaded.emit({"path": path, "content": content})
-        except UnicodeDecodeError:
-            self.error.emit({"path": path, "message": "Die Datei ist keine UTF-8-Textdatei."})
-        except Exception as e:
-            self.error.emit({"path": path, "message": str(e)})
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.get_file, path)
 
     def write_file(self, path, content):
         pass
@@ -126,24 +217,23 @@ class EV3Handler(QObject):
         pass
 
     def go_back(self):
-        self.list_dir(posixpath.dirname(self.current_path))
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.go_back)
 
     def go_home(self):
-        self.list_dir("/home/robot")
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.go_home)
 
     def refresh(self):
-        self.list_dir(self.current_path)
-
-
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.refresh)
 
     def stop(self):
-        self._stop_event.set()
-        if self._shell is not None:
-            self._shell.close()
-            self._shell = None
-        if self._sftp is not None:
-            self._sftp.close()
-            self._sftp = None
+        if self._worker is not None:
+            self._worker.stop()
         if self._ssh is not None:
             self._ssh.close()
             self._ssh = None

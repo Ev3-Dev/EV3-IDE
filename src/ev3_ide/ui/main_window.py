@@ -127,10 +127,11 @@ class MainWindow(QMainWindow):
         self.ev3_handler = EV3Handler()
         self.ev3_handler.start_session()
 
-        self.ev3_handler.ev3_connected.connect(lambda: self.title_bar.set_connection_state("Connected"))
-        self.ev3_handler.ev3_disconnected.connect(lambda: self.title_bar.set_connection_state("Disconnected"))
+        self.ev3_handler.ev3_connected.connect(lambda: self.title_bar.set_connection_state("• Connected"))
+        self.ev3_handler.ev3_disconnected.connect(lambda: self.title_bar.set_connection_state("• Disconnected"))
         self.ev3_handler.directory_updated.connect(self.left_sidebar.update_directory)
         self.ev3_handler.file_loaded.connect(self.open_editor_tab)
+        self.ev3_handler.battery_updated.connect(self.title_bar.set_battery_state)
 
         self.left_sidebar.item_clicked.connect(self.handle_left_clicked)
         self.left_sidebar.item_right_clicked.connect(self.handle_right_clicked)
