@@ -1,8 +1,49 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QComboBox, QStackedWidget, QFrame, QPushButton
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QPoint
 
 from ev3_ide.ui.widgets.files_widget import FilesWidget
 from ev3_ide.ui.widgets.lib_manager import LibManager
+
+
+class InstantComboBox(QComboBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.parent = parent
+
+        self.setFixedSize(110, 30)
+        self.popup = QFrame(self.parent)
+        self.popup.setObjectName("combo_popup")
+        self.popup.setFixedWidth(106)
+
+        self.popup_layout = QVBoxLayout(self.popup)
+        self.popup_layout.setContentsMargins(1, 1, 1, 1)
+        self.popup_layout.setSpacing(1)
+        self.popup.adjustSize()
+        self._build_popup()
+        self.popup.hide()
+
+    def _build_popup(self):
+        for index, text in enumerate(["Files", "EV3 State", "Libraries"]):
+            button = QPushButton(text)
+            button.setFixedHeight(28)
+            button.setObjectName("combo_item")
+            button.clicked.connect(lambda checked=False, button_index=index: self._select_item(button_index))
+            self.popup_layout.addWidget(button)
+
+    def _select_item(self, index):
+        self.setCurrentIndex(index)
+        self.popup.hide()
+
+    def showPopup(self):
+        pos = self.mapTo(self.parent, self.rect().bottomLeft())
+        pos += QPoint(2, 4)
+        self.popup.adjustSize()
+        self.popup.move(pos)
+        self.popup.raise_()
+        self.popup.show()
+
+    def hidePopup(self):
+        self.popup.hide()
 
 
 class LeftSidebar(QFrame):
@@ -18,10 +59,9 @@ class LeftSidebar(QFrame):
         self.setMinimumWidth(250)
 
         # -------- Button-Leiste --------
-        self.dropdown = QComboBox()
+        self.dropdown = InstantComboBox(self)
         self.dropdown.setObjectName("left_sidebar_dropdown")
         self.dropdown.addItems(["Files", "EV3 State", "Libraries"])
-        self.dropdown.setFixedSize(110, 30)
 
         # -------- Content-Area --------
         self.buttons_layout = QHBoxLayout()

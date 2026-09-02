@@ -189,6 +189,27 @@ QComboBox#left_sidebar_dropdown {
     color: #cdd2d0;
 }
 
+QFrame#combo_popup {
+    background-color: #2e2f30;
+    border: none;
+    border-radius: 4px;
+}
+
+QPushButton#combo_item {
+    background: #2e2f30;
+    border: none;
+    border-radius: 4px;
+    margin: 0px;
+    padding: 0px;
+
+    font-size: 13px;
+    color: #cdd2d0;
+}
+
+QPushButton#combo_item:hover {
+    background-color: #444649;
+}
+
 QPushButton#files_back_button, QPushButton#files_home_button, QPushButton#files_new_button, QPushButton#files_refresh_button {
     background-color: transparent;
 }
@@ -225,6 +246,7 @@ QFrame#file_item {
 QFrame#file_item:hover {
     background: #086481;
 }
+
 
 QLabel#file_item_name {
     color: #d4d4d4;
