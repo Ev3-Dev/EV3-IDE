@@ -196,7 +196,7 @@ QFrame#combo_popup {
 QPushButton#combo_item {
     background: #2e2f30;
     border: none;
-    border-radius: 4px;
+    border-radius: 2px;
     margin: 0px;
     padding: 0px;
 

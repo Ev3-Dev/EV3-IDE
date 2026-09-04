@@ -6,8 +6,95 @@ from ev3_ide.core.resources import resource_path
 
 class BatteryPopup(QFrame):
     def __init__(self, parent=None):
-        super().__init__(parent)
-        self.show()
+        super().__init__(parent, Qt.WindowType.Popup)
+
+        self.setObjectName("battery_popup")
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(6)
+
+        self.icon = QLabel()
+        self.icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.percentage_label = QLabel("Percentage: –")
+        self.percentage_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.voltage_label = QLabel("Voltage: –")
+        self.voltage_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.current_label = QLabel("Current: –")
+        self.current_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.voltage_min_label = QLabel("Voltage Minimum: –")
+        self.voltage_min_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.voltage_max_label = QLabel("Voltage Maximum: –")
+        self.voltage_max_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.name_label = QLabel("Battery name: –")
+        self.name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.technology_label = QLabel("Battery technology: –")
+        self.technology_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        layout.addWidget(self.icon)
+        layout.addWidget(self.percentage_label)
+        layout.addWidget(self.voltage_label)
+        layout.addWidget(self.current_label)
+        layout.addWidget(self.voltage_min_label)
+        layout.addWidget(self.voltage_max_label)
+        layout.addWidget(self.name_label)
+        layout.addWidget(self.technology_label)
+
+    def calculate_battery_percentage(self, data):
+        try:
+            voltage_now = int(data.get("POWER_SUPPLY_VOLTAGE_NOW", "0")) / 1000000
+            voltage_min = int(data.get("POWER_SUPPLY_VOLTAGE_MIN_DESIGN", "0")) / 10000000
+            voltage_max = int(data.get("POWER_SUPPLY_VOLTAGE_MAX_DESIGN", "0")) / 10000000
+            return round(max(0, min(100, (voltage_now - voltage_min) / (voltage_max - voltage_min) * 100)))
+        except ZeroDivisionError:
+            return 0
+
+    def set_battery_state(self, data):
+        # POWER_SUPPLY_NAME=lego-ev3-battery
+        # POWER_SUPPLY_TECHNOLOGY=Li-ion
+        # POWER_SUPPLY_VOLTAGE_NOW=7354000
+        # POWER_SUPPLY_VOLTAGE_MAX_DESIGN=84000000
+        # POWER_SUPPLY_VOLTAGE_MIN_DESIGN=60000000
+        # POWER_SUPPLY_CURRENT_NOW=240000
+        # POWER_SUPPLY_SCOPE=System
+
+        percentage = self.calculate_battery_percentage(data)
+        voltage = round(float(data.get("POWER_SUPPLY_VOLTAGE_NOW", "0")) / 1000000, 2)
+        current = round(float(data.get("POWER_SUPPLY_CURRENT_NOW", "0")) / 100000, 2)
+        voltage_min = float(data.get("POWER_SUPPLY_VOLTAGE_MIN_DESIGN", "0")) / 10000000
+        voltage_max = float(data.get("POWER_SUPPLY_VOLTAGE_MAX_DESIGN", "0")) / 10000000
+        name = data.get("POWER_SUPPLY_NAME", "–")
+        technology = data.get("POWER_SUPPLY_TECHNOLOGY", "–")
+
+        self.percentage_label.setText(f"Percentage: {percentage}%")
+        self.voltage_label.setText(f"Voltage: {voltage} V")
+        self.current_label.setText(f"Current: {current} A")
+        self.voltage_min_label.setText(f"Voltage Minimum: {voltage_min} V")
+        self.voltage_max_label.setText(f"Voltage Maximum: {voltage_max} V")
+        self.name_label.setText(f"Battery name: {name}")
+        self.technology_label.setText(f"Battery technology: {technology}")
+
+        if percentage <= 20:
+            icon = "battery-20.svg"
+        elif percentage <= 40:
+            icon = "battery-40.svg"
+        elif percentage <= 60:
+            icon = "battery-60.svg"
+        elif percentage <= 80:
+            icon = "battery-80.svg"
+        else:
+            icon = "battery-100.svg"
+
+        self.icon.setPixmap(
+            QIcon(resource_path(f"ui/icons/{icon}")).pixmap(QSize(32, 32))
+        )
 
 
 class IDETitleBar(QWidget):
@@ -18,6 +105,9 @@ class IDETitleBar(QWidget):
 
         self.ev3_state = "Disconnected"
         self.previous_battery_percentage = 0
+        self.battery_info = {}
+
+        self.battery_popup = BatteryPopup()
 
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(5, 0, 0, 0)
@@ -52,15 +142,12 @@ class IDETitleBar(QWidget):
         # EV3-Layout
         self.ev3_connection_label = QLabel("• Disconnected")
         self.ev3_connection_label.setObjectName("ev3_connection_label")
-        # self.ev3_connection_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 
         self.ev3_battery_icon_label = QLabel()
         self.ev3_battery_icon_label.setPixmap(QIcon(resource_path("ui/icons/battery-20.svg")).pixmap(QSize(14, 14)))
-        # self.ev3_battery_icon_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 
         self.ev3_battery_label = QLabel("–")
         self.ev3_battery_label.setObjectName("ev3_battery_label")
-        # self.ev3_battery_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
 
         ev3_battery_layout.addWidget(self.ev3_battery_icon_label)
         ev3_battery_layout.addWidget(self.ev3_battery_label)
@@ -107,6 +194,7 @@ class IDETitleBar(QWidget):
             self.ev3_battery_label.setText("–")
 
     def set_battery_state(self, data):
+        self.battery_info = data
         list_0_20 = list(range(0, 21))
         list_21_40 = list(range(21, 41))
         list_41_60 = list(range(41, 61))
@@ -127,6 +215,7 @@ class IDETitleBar(QWidget):
                 self.ev3_battery_icon_label.setPixmap(QIcon(resource_path("ui/icons/battery-100.svg")).pixmap(QSize(14, 14)))
             self.previous_battery_percentage = percentage
         self.ev3_battery_label.setText(f"{percentage}%")
+        self.battery_popup.set_battery_state(data)
 
     def calculate_battery_percentage(self, data):
         voltage_now = int(data["POWER_SUPPLY_VOLTAGE_NOW"]) / 1000000
@@ -145,4 +234,7 @@ class IDETitleBar(QWidget):
         return super().eventFilter(watched, event)
 
     def on_frame_clicked(self):
-        print("Der QFrame wurde angeklickt!")
+        self.battery_popup.set_battery_state(self.battery_info)
+        pos = self.ev3_frame.mapToGlobal(self.ev3_frame.rect().bottomLeft())
+        self.battery_popup.move(pos)
+        self.battery_popup.show()
