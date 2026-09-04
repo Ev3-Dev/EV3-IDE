@@ -17,7 +17,18 @@ QPushButton#run_button {
     background-color: #198185;
 }
 
-QPushButton#minimize_button {
+QFrame#ev3_frame {
+    border: 1px solid #3c444a;
+    border-radius: 6px;
+    background-color: transparent;
+}
+
+QLabel#ev3_connection_label, QLabel#ev3_battery_label {
+    font-size: 12px;
+    color: #d4d4d4;
+}
+
+QPushButton#minimize_button, QPushButton#maximize_button {
     border: 0px;
     border-radius: 0px;
 
@@ -25,19 +36,7 @@ QPushButton#minimize_button {
     background-color: #26282c;
 }
 
-QPushButton#minimize_button:hover {
-    background-color: #3a3b3f;
-}
-
-QPushButton#maximize_button {
-    border: 0px;
-    border-radius: 0px;
-
-    color: white;
-    background-color: #26282c;
-}
-
-QPushButton#maximize_button:hover {
+QPushButton#minimize_button:hover, QPushButton#maximize_button:hover {
     background-color: #3a3b3f;
 }
 
@@ -59,7 +58,6 @@ QTabWidget#editor_tabs QTabBar {
     background-color: #191a1c;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-    /* background-color: #191a1c; */
 }
 
 QTabWidget#editor_tabs QTabBar::tab {
@@ -101,7 +99,7 @@ QTabWidget#editor_tabs QTabBar::close-button {
 }
 
 QTabWidget#editor_tabs QTabBar::close-button:hover {
-    background-color: #e81123;
+    background-color: #91131f;
 }
 
 /* -------- Code-Editor -------- */

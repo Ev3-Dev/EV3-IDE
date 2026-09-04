@@ -109,9 +109,19 @@ class SFTPWorker(QObject):
         self.list_dir(self.current_path)
 
     def get_battery(self):
-        with self.sftp.open("/sys/class/power_supply/lego-ev3-battery/voltage_now", "r") as file:
-            battery = int(file.read().strip())
-        self.battery_updated.emit({"voltage_now": battery})
+        if not self.is_connected():
+            return
+        try:
+            with self.sftp.open("/sys/class/power_supply/lego-ev3-battery/uevent", "rb") as file:
+                data = file.read().decode("utf-8")
+                values = {}
+                for line in data.splitlines():
+                    if "=" in line:
+                        key, value = line.split("=", 1)
+                        values[key] = value
+                self.battery_updated.emit(values)
+        except Exception as e:
+            self.error.emit({"message": str(e), "type": "battery"})
 
 
 class EV3Handler(QObject):
@@ -142,8 +152,6 @@ class EV3Handler(QObject):
         self.ev3_address = "ev3dev.local"
         self.ev3_password = "maker"
 
-        self.error.connect(lambda data: print(str(data)))
-
 
     def check_available_and_connect(self):
         ssh = paramiko.SSHClient()
@@ -168,7 +176,7 @@ class EV3Handler(QObject):
             result, ssh = self.check_available_and_connect()
             if result:
                 self._ssh = ssh
-                print("Connected")
+                # print("Connected")
                 self.ev3_connected.emit()
                 break
         self._sftp = self._ssh.open_sftp()

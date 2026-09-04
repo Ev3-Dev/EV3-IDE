@@ -2,7 +2,7 @@ import ctypes
 from ctypes import wintypes
 import posixpath
 
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QSplitter, QPushButton
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QSplitter, QPushButton, QFrame
 from PySide6.QtCore import Qt, Signal, QPoint, QEvent, QTimer
 
 from ev3_ide.ui.widgets.toolbar import IDETitleBar
@@ -132,6 +132,7 @@ class MainWindow(QMainWindow):
         self.ev3_handler.directory_updated.connect(self.left_sidebar.update_directory)
         self.ev3_handler.file_loaded.connect(self.open_editor_tab)
         self.ev3_handler.battery_updated.connect(self.title_bar.set_battery_state)
+        self.ev3_handler.error.connect(self.handle_error)
 
         self.left_sidebar.item_clicked.connect(self.handle_left_clicked)
         self.left_sidebar.item_right_clicked.connect(self.handle_right_clicked)
@@ -165,6 +166,9 @@ class MainWindow(QMainWindow):
 
     def handle_files_refresh(self):
         self.ev3_handler.refresh()
+
+    def handle_error(self, data):
+        print(f"Error: {data}")
 
     # MainWindow-Funktionen
     def update_splitter_handle(self, splitter):
@@ -263,7 +267,7 @@ class MainWindow(QMainWindow):
 
             if 0 <= y < self.title_bar.height():
                 widget = self.childAt(x, y)
-                if isinstance(widget, QPushButton):
+                if isinstance(widget, QPushButton) or isinstance(widget, QFrame):
                     return True, HTCLIENT
                 return True, HTCAPTION
             return True, HTCLIENT
@@ -273,38 +277,3 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         self.ev3_handler.stop()
         event.accept()
-
-    # ── Öffentliche API – wird vom Controller aufgerufen ───────
-
-    def open_file(self, path: str, content: str):
-        self.editor_tabs.open_file(path, content)
-
-    def log(self, text: str, kind: str = "output"):
-        self.bottom_tabs.console.append_line(text, kind)
-
-    def set_connected(self, host: str, conn_type: str):
-        pass
-        # self.toolbar.set_connected(host, conn_type)
-
-    def set_disconnected(self):
-        pass
-        # self.toolbar.set_disconnected()
-
-    def set_battery(self, percent: int):
-        pass
-        # self.toolbar.set_battery(percent)
-
-    def update_display(self, raw: bytes):
-        pass
-        # self.right_sidebar.ev3_display.update_from_framebuffer(raw)
-
-    def update_motor(self, port: str, speed: int):
-        pass
-        # self.right_sidebar.motor_widget.update_motor(port, speed)
-
-    def update_sensor(self, port: str, name: str, value: str, bar: int = -1):
-        pass
-        # self.right_sidebar.sensor_widget.update_sensor(port, name, value, bar)
-
-    def load_file_tree(self, tree: dict):
-        self.left_sidebar.file_tree.load_tree(tree)
