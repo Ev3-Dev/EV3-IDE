@@ -124,6 +124,7 @@ class MainWindow(QMainWindow):
 
         self.showMaximized()
 
+        # Widget-Signals
         self.ev3_handler = EV3Handler()
         self.ev3_handler.start_session()
 
@@ -143,10 +144,11 @@ class MainWindow(QMainWindow):
     # Code-Editor-Logik
     def handle_left_clicked(self, data):
         if data["type"] == "file":
-            if data["path"] in self.editor_tabs.get_paths().values():
+            if data["path"] in self.editor_tabs.get_opened_paths():
+                print("Tab ist schon offen und Inhalt wird nicht nochmal angefordert")
                 self.editor_tabs.focus_tab(data["path"])
                 return
-            self.ev3_handler.get_file(data["path"])
+            self.ev3_handler.get_file(data)
         else:
             self.ev3_handler.list_dir(data["path"])
 
@@ -154,9 +156,7 @@ class MainWindow(QMainWindow):
         pass
 
     def open_editor_tab(self, data):
-        data["name"] = posixpath.basename(data["path"])
-        self.editor_tabs.open_tab(data)
-        self.editor_tabs.open_file(data)
+        self.editor_tabs.handle_file_content(data)
 
     def handle_files_widget_back(self):
         self.ev3_handler.go_back()

@@ -64,6 +64,7 @@ class SFTPWorker(QObject):
             self.current_path = path
             entries = self.sftp.listdir_attr(path)
             result = []
+            protected_paths = ["/sys", "/proc", "/dev"]
             for entry in entries:
                 entry_path = posixpath.join(path, entry.filename)
                 result.append({
@@ -74,12 +75,14 @@ class SFTPWorker(QObject):
                     "mode": entry.st_mode,
                     "modified": entry.st_mtime,
                     "executable": bool(entry.st_mode & stat.S_IXUSR),
+                    "editable": bool(entry.st_mode & stat.S_IWUSR) and not any(entry_path.startswith(path) for path in protected_paths),
                 })
             self.directory_updated.emit(result)
         except Exception as e:
             self.error.emit({"message": str(e), "type": "error"})
 
-    def get_file(self, path):
+    def get_file(self, data):
+        path = data["path"]
         if not self.is_connected():
             return
         try:
@@ -91,9 +94,9 @@ class SFTPWorker(QObject):
                 if b"\x00" in header:
                     self.error.emit({"path": path, "message": "Die Datei scheint eine Binärdatei zu sein."})
                     return
-                data = header + file.read()
-            content = data.decode("utf-8")
-            self.file_loaded.emit({"path": path, "content": content})
+                data_read = header + file.read()
+            content = data_read.decode("utf-8")
+            self.file_loaded.emit({**data, "content": content})
         except UnicodeDecodeError:
             self.error.emit({"path": path, "message": "Die Datei ist keine UTF-8-Textdatei."})
         except Exception as e:
@@ -199,10 +202,10 @@ class EV3Handler(QObject):
 
 
     # -------- Öffentliche API --------
-    def list_dir(self, path):
+    def list_dir(self, data):
         if self._worker is None:
             return
-        self._worker.enqueue(self._worker.list_dir, path)
+        self._worker.enqueue(self._worker.list_dir, data)
 
     def get_file(self, path):
         if self._worker is None:

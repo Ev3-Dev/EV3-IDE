@@ -1,9 +1,37 @@
-from PySide6.QtWidgets import QTabWidget
-from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget
+from PySide6.QtCore import Signal, QSize
+from PySide6.QtGui import QIcon
 from ev3_ide.ui.widgets.code_editor import CodeEditor
+from ev3_ide.core.resources import resource_path
+
+
+class EditorTab(QWidget):
+    def __init__(self, data):
+        super().__init__()
+
+        self.name = data["name"]
+        self.path = data["path"]
+        self.content = data["content"]
+        self.size = data["size"]
+        self.mode = data["mode"]
+        self.last_time_modified = data["modified"]
+        self.executable = data["executable"]
+        self.editable = data["editable"]
+
+        self.editor = CodeEditor()
+        self.editor.setPlainText(self.content)
+        print(f"Editable: {self.editable}")
+        self.editor.setReadOnly(not self.editable)
+
+        self.modified = False
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.editor)
+
 
 class EditorTabs(QTabWidget):
-    file_changed = Signal(str, str)  # Pfad, Inhalt
+    file_changed = Signal(dict)
 
     def __init__(self):
         super().__init__()
@@ -11,70 +39,58 @@ class EditorTabs(QTabWidget):
         self.setDocumentMode(True)
         self.setTabsClosable(True)
         self.setMovable(True)
+        self.setIconSize(QSize(18, 18))
         self.tabCloseRequested.connect(self._close_tab)
-        self._paths: dict[int, str] = {}  # Tab-Index → Remote-Pfad
-        self.tabBar().tabMoved.connect(self.on_tab_moved)
-
-    def get_paths(self):
-        return self._paths
-
-    def on_tab_moved(self, old_index, new_index):
-        paths = list(self._paths.values())
-        path = paths.pop(old_index)
-        paths.insert(new_index, path)
-        self._paths = {index: path for index, path in enumerate(paths)}
 
     def open_tab(self, data):
-        # Schon offen? Dann nur fokussieren
-        for i, p in self._paths.items():
-            if p == data["path"]:
-                self.setCurrentIndex(i)
+        # Datei bereits geöffnet?
+        for index in range(self.count()):
+            tab = self.widget(index)
+            if isinstance(tab, EditorTab) and tab.path == data["path"]:
+                self.setCurrentIndex(index)
                 return
-
-        editor = CodeEditor()
-        editor.setPlainText("")
-        editor.textChanged.connect(lambda: self.file_changed.emit(data["path"], editor.toPlainText()))
-
-        name  = data["name"]
-        index = self.addTab(editor, name)
-        self._paths[index] = data["path"]
+        tab = EditorTab(data)
+        tab.editor.textChanged.connect(lambda: self.file_changed.emit({"path": tab.path, "content": tab.editor.toPlainText()}))
+        index = self.addTab(tab, tab.name)
+        if not tab.editable:
+            self.setTabIcon(index, QIcon(resource_path("ui/icons/lock.svg")))
         self.setCurrentIndex(index)
 
-    def open_file(self, data):
-        path = data["path"]
-        content = data["content"]
-        for index, tab_path in self._paths.items():
-            if tab_path == path:
-                editor = self.widget(index)
-                if isinstance(editor, CodeEditor):
-                    editor.setPlainText(content)
+    def handle_file_content(self, data):
+        self.open_tab(data)
+
+    def focus_tab(self, path):
+        for index in range(self.count()):
+            tab = self.widget(index)
+            if isinstance(tab, EditorTab) and tab.path == path:
                 self.setCurrentIndex(index)
                 return
 
-    def focus_tab(self, path):
-        for i, p in self._paths.items():
-            if p == path:
-                self.setCurrentIndex(i)
-                return
+    def current_tab(self):
+        tab = self.currentWidget()
+        if isinstance(tab, EditorTab):
+            return tab
+        return None
 
-    def current_content(self) -> str | None:
-        w = self.currentWidget()
-        return w.toPlainText() if w else None
+    def current_content(self):
+        tab = self.current_tab()
+        if tab:
+            return tab.editor.toPlainText()
+        return None
 
-    def current_path(self) -> str | None:
-        return self._paths.get(self.currentIndex())
+    def current_path(self):
+        tab = self.current_tab()
+        if tab:
+            return tab.path
+        return None
 
-    def mark_unsaved(self, index: int):
-        name = self.tabText(index)
-        if not name.startswith("● "):
-            self.setTabText(index, f"● {name}")
+    def get_opened_paths(self):
+        paths = []
+        for index in range(self.count()):
+            tab = self.widget(index)
+            if isinstance(tab, EditorTab):
+                paths.append(tab.path)
+        return paths
 
-    def mark_saved(self, index: int):
-        name = self.tabText(index).removeprefix("● ")
-        self.setTabText(index, name)
-
-    def _close_tab(self, index: int):
+    def _close_tab(self, index):
         self.removeTab(index)
-        self._paths.pop(index, None)
-        # Indizes neu aufbauen
-        self._paths = {i: p for i, (_, p) in enumerate(sorted(self._paths.items()))}

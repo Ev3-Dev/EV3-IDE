@@ -141,7 +141,7 @@ class BatteryPopup(QFrame):
 
         percentage = self.calculate_battery_percentage(data)
         voltage = round(float(data.get("POWER_SUPPLY_VOLTAGE_NOW", "0")) / 1000000, 2)
-        current = round(float(data.get("POWER_SUPPLY_CURRENT_NOW", "0")) / 100000, 2)
+        current = round(float(data.get("POWER_SUPPLY_CURRENT_NOW", "0")) / 1000000, 2)
         voltage_min = float(data.get("POWER_SUPPLY_VOLTAGE_MIN_DESIGN", "0")) / 10000000
         voltage_max = float(data.get("POWER_SUPPLY_VOLTAGE_MAX_DESIGN", "0")) / 10000000
         name = data.get("POWER_SUPPLY_NAME", "–")
@@ -229,6 +229,11 @@ class IDETitleBar(QWidget):
         ev3_layout.addWidget(self.ev3_connection_label)
         ev3_layout.addLayout(ev3_battery_layout)
 
+        # Help-Button
+        self.ev3_help_button = QPushButton("?")
+        self.ev3_help_button.setObjectName("ev3_help_button")
+        self.ev3_help_button.setFixedSize(30, 30)
+
         # Windows-Buttons
         self.minimize_button = QPushButton()
         self.minimize_button.setObjectName("minimize_button")
@@ -254,8 +259,9 @@ class IDETitleBar(QWidget):
 
         main_layout.addWidget(self.logo)
         main_layout.addWidget(self.run_button)
-        main_layout.addStretch(stretch=50)
+        main_layout.addStretch(stretch=75)
         main_layout.addWidget(self.ev3_frame)
+        main_layout.addWidget(self.ev3_help_button)
         main_layout.addStretch(stretch=1)
         main_layout.addLayout(windows_buttons_layout)
 

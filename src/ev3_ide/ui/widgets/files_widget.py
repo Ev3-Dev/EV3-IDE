@@ -96,7 +96,7 @@ class FilesWidget(QWidget):
 
         # Neue Einträge hinzufügen
         for entry in entries:
-            file_item = FileItem(entry["name"], entry["path"], entry["type"], entry["size"], entry["mode"], entry["modified"], entry["executable"])
+            file_item = FileItem(entry)
             file_item.clicked.connect(self.item_clicked)
             file_item.right_clicked.connect(self.item_right_clicked)
             self.file_layout.addWidget(file_item)
@@ -108,26 +108,20 @@ class FileItem(QFrame):
     clicked = Signal(dict)
     right_clicked = Signal(dict)
 
-    def __init__(self, name, path, item_type, size, mode, modified, executable, parent=None):
+    def __init__(self, data, parent=None):
         super().__init__(parent)
 
         self.setObjectName("file_item")
         self.setFixedHeight(30)
 
-        self.name = name
-        self.path = path
-        self.item_type = item_type
-        self.size = size
-        self.mode = mode
-        self.modified = modified
-        self.executable = executable
+        self.data = data
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(6, 4, 6, 4)
 
-        self.icon = QLabel("📁" if self.item_type == "directory" else "📄")
+        self.icon = QLabel("📁" if data["type"] == "directory" else "📄")
 
-        self.name_label = QLabel(name)
+        self.name_label = QLabel(data["name"])
         self.name_label.setObjectName("file_item_name")
         font = QFont("Segoe UI", 10)
         # if self.executable and self.item_type != "directory":
@@ -140,7 +134,7 @@ class FileItem(QFrame):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
-            self.clicked.emit({"name": self.name, "path": self.path, "type": self.item_type})
+            self.clicked.emit(self.data)
         elif event.button() == Qt.MouseButton.RightButton:
-            self.right_clicked.emit({"name": self.name, "path": self.path, "type": self.item_type, "executable": self.executable})
+            self.right_clicked.emit(self.data)
         super().mousePressEvent(event)
