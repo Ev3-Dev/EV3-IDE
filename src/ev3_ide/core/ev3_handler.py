@@ -64,7 +64,7 @@ class SFTPWorker(QObject):
             self.current_path = path
             entries = self.sftp.listdir_attr(path)
             result = []
-            protected_paths = ["/sys", "/proc", "/dev"]
+            protected_paths = ["/sys", "/proc", "/dev", "/boot"]
             for entry in entries:
                 entry_path = posixpath.join(path, entry.filename)
                 result.append({

@@ -5,10 +5,12 @@ from ev3_ide.core.resources import resource_path
 
 
 class BatteryPopup(QFrame):
-    def __init__(self, parent=None):
-        super().__init__(parent, Qt.WindowType.Popup)
+    def __init__(self, ev3_frame, parent=None):
+        super().__init__(parent, Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
 
-        self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        self.ev3_frame = ev3_frame
+
+        # self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
         self.setFixedWidth(160)
 
         self.setObjectName("battery_popup")
@@ -166,9 +168,11 @@ class BatteryPopup(QFrame):
         else:
             icon = "battery-100.svg"
 
-        self.icon.setPixmap(
-            QIcon(resource_path(f"ui/icons/{icon}")).pixmap(QSize(32, 32))
-        )
+        self.icon.setPixmap(QIcon(resource_path(f"ui/icons/{icon}")).pixmap(QSize(32, 32)))
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self.ev3_frame.update()
 
 
 class IDETitleBar(QWidget):
@@ -181,8 +185,6 @@ class IDETitleBar(QWidget):
         self.previous_battery_percentage = 0
         self.battery_info = {}
 
-        self.battery_popup = BatteryPopup()
-
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(5, 0, 0, 0)
         main_layout.setSpacing(5)
@@ -190,6 +192,8 @@ class IDETitleBar(QWidget):
         self.ev3_frame = QFrame()
         self.ev3_frame.setObjectName("ev3_frame")
         self.ev3_frame.setFixedHeight(30)
+
+        self.battery_popup = BatteryPopup(self.ev3_frame)
 
         ev3_layout = QHBoxLayout(self.ev3_frame)
         ev3_layout.setContentsMargins(8, 0, 8, 0)
@@ -316,5 +320,6 @@ class IDETitleBar(QWidget):
     def on_frame_clicked(self):
         self.battery_popup.set_battery_state(self.battery_info)
         pos = self.ev3_frame.mapToGlobal(self.ev3_frame.rect().bottomLeft())
+        pos.setY(pos.y() + 5)
         self.battery_popup.move(pos)
         self.battery_popup.show()
