@@ -13,8 +13,17 @@ QMainWindow#main_window {
 /* Title-Bar */
 
 QPushButton#run_button {
+    border: 1px solid #3c444a;
+    border-radius: 5px;
     color: white;
-    background-color: #198185;
+    background-color: #2f3437;
+}
+
+QPushButton#save_button {
+    border: 1px solid #3c444a;
+    border-radius: 5px;
+    color: white;
+    background-color: #2f3437;
 }
 
 QFrame#ev3_frame {

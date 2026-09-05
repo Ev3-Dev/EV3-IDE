@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLabel, QFrame
-from PySide6.QtGui import QIcon
-from PySide6.QtCore import Qt, QSize, QEvent, QObject
+from PySide6.QtCore import Qt, QSize, QEvent, QObject, Signal
+from PySide6.QtGui import QIcon, QKeySequence, QShortcut
 from ev3_ide.core.resources import resource_path
 
 
@@ -16,11 +16,12 @@ class BatteryPopup(QFrame):
         self.setObjectName("battery_popup")
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setContentsMargins(10, 8, 10, 10)
         layout.setSpacing(6)
 
         battery_layout = QHBoxLayout()
         battery_layout.setSpacing(2)
+        battery_layout.setContentsMargins(0, 0, 5, 0)
 
         self.icon = QLabel()
 
@@ -176,6 +177,8 @@ class BatteryPopup(QFrame):
 
 
 class IDETitleBar(QWidget):
+    save_requested = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -216,6 +219,10 @@ class IDETitleBar(QWidget):
         self.run_button = QPushButton("Run")
         self.run_button.setObjectName("run_button")
         self.run_button.setFixedSize(90, 30)
+
+        self.save_button = QPushButton("Save")
+        self.save_button.setObjectName("save_button")
+        self.save_button.setFixedSize(90, 30)
 
         # EV3-Layout
         self.ev3_connection_label = QLabel("• Disconnected")
@@ -263,6 +270,7 @@ class IDETitleBar(QWidget):
 
         main_layout.addWidget(self.logo)
         main_layout.addWidget(self.run_button)
+        main_layout.addWidget(self.save_button)
         main_layout.addStretch(stretch=75)
         main_layout.addWidget(self.ev3_frame)
         main_layout.addWidget(self.ev3_help_button)
@@ -270,6 +278,11 @@ class IDETitleBar(QWidget):
         main_layout.addLayout(windows_buttons_layout)
 
         self.ev3_frame.installEventFilter(self)
+
+        # Shortcuts
+        self.save_action = QShortcut(QKeySequence("Ctrl+S"), self)
+        self.save_action.activated.connect(self.save_requested)
+        self.save_button.clicked.connect(self.save_requested)
 
     def set_connection_state(self, state):
         if state != self.ev3_state:

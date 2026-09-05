@@ -20,7 +20,6 @@ class EditorTab(QWidget):
 
         self.editor = CodeEditor(self.path)
         self.editor.setPlainText(self.content)
-        print(f"Editable: {self.editable}")
         self.editor.setReadOnly(not self.editable)
 
         self.modified = False
@@ -41,8 +40,13 @@ class EditorTabs(QTabWidget):
         self.setMovable(True)
         self.setIconSize(QSize(18, 18))
         self.tabCloseRequested.connect(self._close_tab)
+        # Shortcuts
         self.close_tab_shortcut = QShortcut(QKeySequence("Ctrl+W"), self)
         self.close_tab_shortcut.activated.connect(self.close_current_tab)
+        self.next_tab_shortcut = QShortcut(QKeySequence("Alt+Right"), self)
+        self.next_tab_shortcut.activated.connect(self.next_tab)
+        self.previous_tab_shortcut = QShortcut(QKeySequence("Alt+Left"), self)
+        self.previous_tab_shortcut.activated.connect(self.previous_tab)
 
     def open_tab(self, data):
         # Datei bereits geöffnet?
@@ -99,6 +103,20 @@ class EditorTabs(QTabWidget):
         index = self.currentIndex()
         if index >= 0:
             self._close_tab(index)
+
+    def next_tab(self):
+        if self.count() == 0:
+            return
+        index = self.currentIndex()
+        next_index = (index + 1) % self.count()
+        self.setCurrentIndex(next_index)
+
+    def previous_tab(self):
+        if self.count() == 0:
+            return
+        index = self.currentIndex()
+        previous_index = (index - 1) % self.count()
+        self.setCurrentIndex(previous_index)
 
     def _close_tab(self, index):
         self.removeTab(index)

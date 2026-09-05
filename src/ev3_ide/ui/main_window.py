@@ -4,6 +4,7 @@ import posixpath
 
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QSplitter, QPushButton, QFrame
 from PySide6.QtCore import Qt, Signal, QPoint, QEvent, QTimer
+from PySide6.QtGui import QShortcut, QKeySequence
 
 from ev3_ide.ui.widgets.toolbar import IDETitleBar
 from ev3_ide.ui.widgets.left_sidebar import LeftSidebar
@@ -132,6 +133,7 @@ class MainWindow(QMainWindow):
         self.ev3_handler.ev3_disconnected.connect(lambda: self.title_bar.set_connection_state("• Disconnected"))
         self.ev3_handler.directory_updated.connect(self.left_sidebar.update_directory)
         self.ev3_handler.file_loaded.connect(self.open_editor_tab)
+        self.ev3_handler.file_written.connect(lambda path: print(path))
         self.ev3_handler.battery_updated.connect(self.title_bar.set_battery_state)
         self.ev3_handler.error.connect(self.handle_error)
 
@@ -141,11 +143,20 @@ class MainWindow(QMainWindow):
         self.left_sidebar.home_requested.connect(self.handle_files_home)
         self.left_sidebar.refresh_requested.connect(self.handle_files_refresh)
 
+        # Shortcuts
+        self.title_bar.save_requested.connect(self.save_current_file)
+
+    # Shortcut-Funktionen
+    def save_current_file(self):
+        tab = self.editor_tabs.current_tab()
+        if tab is None:
+            return
+        self.ev3_handler.save_file(tab.path, tab.editor.toPlainText())
+
     # Code-Editor-Logik
     def handle_left_clicked(self, data):
         if data["type"] == "file":
             if data["path"] in self.editor_tabs.get_opened_paths():
-                print("Tab ist schon offen und Inhalt wird nicht nochmal angefordert")
                 self.editor_tabs.focus_tab(data["path"])
                 return
             self.ev3_handler.get_file(data)

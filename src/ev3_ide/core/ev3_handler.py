@@ -6,6 +6,8 @@ import queue
 import time
 from PySide6.QtCore import QObject, Signal
 
+from ev3_ide.core.ev3_paths import PROTECTED_PATHS, PROTECTED_FILES
+
 
 class SFTPWorker(QObject):
     directory_updated = Signal(list)
@@ -57,6 +59,15 @@ class SFTPWorker(QObject):
 
     # -------- SFTP-Aktionen --------
 
+    def _is_protected(self, path):
+        path = path.strip()
+        if path in PROTECTED_FILES:
+            return True
+        for protected_path in PROTECTED_PATHS:
+            if path == protected_path or path.startswith(protected_path + "/"):
+                return True
+        return False
+
     def list_dir(self, path):
         if not self.is_connected():
             return
@@ -64,7 +75,6 @@ class SFTPWorker(QObject):
             self.current_path = path
             entries = self.sftp.listdir_attr(path)
             result = []
-            protected_paths = ["/sys", "/proc", "/dev", "/boot"]
             for entry in entries:
                 entry_path = posixpath.join(path, entry.filename)
                 result.append({
@@ -75,7 +85,7 @@ class SFTPWorker(QObject):
                     "mode": entry.st_mode,
                     "modified": entry.st_mtime,
                     "executable": bool(entry.st_mode & stat.S_IXUSR),
-                    "editable": bool(entry.st_mode & stat.S_IWUSR) and not any(entry_path.startswith(path) for path in protected_paths),
+                    "editable": bool(entry.st_mode & stat.S_IWUSR) and not self._is_protected(entry_path),
                 })
             self.directory_updated.emit(result)
         except Exception as e:
@@ -101,6 +111,16 @@ class SFTPWorker(QObject):
             self.error.emit({"path": path, "message": "Die Datei ist keine UTF-8-Textdatei."})
         except Exception as e:
             self.error.emit({"path": path, "message": str(e)})
+
+    def write_file(self, path, content):
+        if not self.is_connected():
+            return
+        try:
+            with self.sftp.open(path, "w") as file:
+                file.write(content)
+            self.file_written.emit(path)
+        except Exception as e:
+            self.error.emit({"path": path, "message": str(e), "type": "error"})
 
     def go_back(self):
         self.list_dir(posixpath.dirname(self.current_path))
@@ -202,15 +222,28 @@ class EV3Handler(QObject):
 
 
     # -------- Öffentliche API --------
-    def list_dir(self, data):
+    def list_dir(self, path):
         if self._worker is None:
             return
-        self._worker.enqueue(self._worker.list_dir, data)
+        self._worker.enqueue(self._worker.list_dir, path)
 
-    def get_file(self, path):
+    def get_file(self, data):
         if self._worker is None:
             return
-        self._worker.enqueue(self._worker.get_file, path)
+        self._worker.enqueue(self._worker.get_file, data)
+
+    def save_file(self, path, content):
+        if self._worker is None:
+            return
+        if path in PROTECTED_FILES:
+            self.error.emit({"path": str(path), "type": "error"})
+            return
+        for protected_path in PROTECTED_PATHS:
+            if path == protected_path or path.startswith(protected_path + "/"):
+                self.error.emit({"path": str(path), "type": "error"})
+                return
+        print(f"Saving file: {path} with content: {content}")
+        self._worker.enqueue(self._worker.write_file, path, content)
 
     def write_file(self, path, content):
         pass
