@@ -22,8 +22,10 @@ class CodeEditor(QPlainTextEdit):
     _font_id = None
     _font_family = None
 
-    def __init__(self, language=None, parent=None):
+    def __init__(self, path, parent=None):
         super().__init__(parent)
+
+        self.path = path
 
         self.setObjectName("code_editor")
         self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)

@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget
 from PySide6.QtCore import Signal, QSize
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QShortcut, QKeySequence
 from ev3_ide.ui.widgets.code_editor import CodeEditor
 from ev3_ide.core.resources import resource_path
 
@@ -18,7 +18,7 @@ class EditorTab(QWidget):
         self.executable = data["executable"]
         self.editable = data["editable"]
 
-        self.editor = CodeEditor()
+        self.editor = CodeEditor(self.path)
         self.editor.setPlainText(self.content)
         print(f"Editable: {self.editable}")
         self.editor.setReadOnly(not self.editable)
@@ -41,6 +41,8 @@ class EditorTabs(QTabWidget):
         self.setMovable(True)
         self.setIconSize(QSize(18, 18))
         self.tabCloseRequested.connect(self._close_tab)
+        self.close_tab_shortcut = QShortcut(QKeySequence("Ctrl+W"), self)
+        self.close_tab_shortcut.activated.connect(self.close_current_tab)
 
     def open_tab(self, data):
         # Datei bereits geöffnet?
@@ -52,6 +54,7 @@ class EditorTabs(QTabWidget):
         tab = EditorTab(data)
         tab.editor.textChanged.connect(lambda: self.file_changed.emit({"path": tab.path, "content": tab.editor.toPlainText()}))
         index = self.addTab(tab, tab.name)
+        self.setTabToolTip(index, tab.path)
         if not tab.editable:
             self.setTabIcon(index, QIcon(resource_path("ui/icons/lock.svg")))
         self.setCurrentIndex(index)
@@ -91,6 +94,11 @@ class EditorTabs(QTabWidget):
             if isinstance(tab, EditorTab):
                 paths.append(tab.path)
         return paths
+
+    def close_current_tab(self):
+        index = self.currentIndex()
+        if index >= 0:
+            self._close_tab(index)
 
     def _close_tab(self, index):
         self.removeTab(index)

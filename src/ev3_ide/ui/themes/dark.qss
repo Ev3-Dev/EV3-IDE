@@ -114,7 +114,7 @@ QTabWidget#editor_tabs QTabBar::tab {
     height: 30px;
     padding: 0px 30px 1px 7px;
     min-width: 60px;
-    max-width: 220px;
+    max-width: 400px;
 }
 
 
