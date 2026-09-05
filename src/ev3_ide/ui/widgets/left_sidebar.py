@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QComboBox, QStackedWidget, QFrame, QPushButton
-from PySide6.QtCore import Signal, QPoint
+from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QComboBox, QStackedWidget, QFrame, QPushButton
+from PySide6.QtCore import Qt, Signal, QPoint, QEvent
 
 from ev3_ide.ui.widgets.files_widget import FilesWidget
 from ev3_ide.ui.widgets.lib_manager import LibManager
@@ -22,6 +22,8 @@ class InstantComboBox(QComboBox):
         self._build_popup()
         self.popup.hide()
 
+        QApplication.instance().installEventFilter(self)
+
     def _build_popup(self):
         for index, text in enumerate(["Files", "EV3 State", "Libraries"]):
             button = QPushButton(text)
@@ -41,9 +43,30 @@ class InstantComboBox(QComboBox):
         self.popup.move(pos)
         self.popup.raise_()
         self.popup.show()
+        self.setFocus()
 
     def hidePopup(self):
         self.popup.hide()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            self.popup.hide()
+            event.accept()
+        else:
+            super().keyPressEvent(event)
+
+    def eventFilter(self, obj, event):
+        if not self.popup.isVisible():
+            return super().eventFilter(obj, event)
+        if event.type() == QEvent.Type.MouseButtonPress:
+            global_click_pos = event.globalPosition().toPoint()
+            local_click = self.mapFromGlobal(global_click_pos)
+            check_rect = self.popup.rect()
+            check_rect = check_rect.adjusted(0, 0, 0, 30)
+            if not check_rect.contains(local_click):
+                self.popup.hide()
+                return False
+        return super().eventFilter(obj, event)
 
 
 class LeftSidebar(QFrame):

@@ -28,6 +28,29 @@ QLabel#ev3_connection_label, QLabel#ev3_battery_label {
     color: #d4d4d4;
 }
 
+QFrame#battery_popup {
+    background-color: #3c444a;
+    border: 0px transparent;
+}
+
+QLabel#percentage_label {
+    color: #d4d4d4;
+    font-family: "Arial";
+    font-size: 19px;
+    font-weight: bold;
+}
+
+QLabel#percentage_sign_label {
+    color: #d4d4d4;
+    font-family: "Arial";
+    font-size: 18px;
+    font-weight: bold;
+}
+
+QLabel#voltage_label, QLabel#voltage_value_label, QLabel#current_label, QLabel#current_value_label, QLabel#voltage_min_label, QLabel#voltage_min_value_label, QLabel#voltage_max_label, QLabel#voltage_max_value_label, QLabel#name_label, QLabel#name_value_label, QLabel#technology_label, QLabel#technology_value_label {
+    color: #d4d4d4;
+}
+
 QPushButton#minimize_button, QPushButton#maximize_button {
     border: 0px;
     border-radius: 0px;
@@ -189,14 +212,14 @@ QComboBox#left_sidebar_dropdown {
 
 QFrame#combo_popup {
     background-color: #2e2f30;
-    border: none;
+    border: 1px solid #434447;
     border-radius: 4px;
 }
 
 QPushButton#combo_item {
     background: #2e2f30;
     border: none;
-    border-radius: 2px;
+    border-radius: 3px;
     margin: 0px;
     padding: 0px;
 

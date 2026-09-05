@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
     def __init__(self, app, theme_manager):
         super().__init__()
         self.setObjectName("main_window")
-        self.setMinimumSize(1200, 750)
+        self.setMinimumSize(650, 450)
 
         central = QWidget()
         self.setCentralWidget(central)

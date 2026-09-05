@@ -8,44 +8,118 @@ class BatteryPopup(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowType.Popup)
 
+        self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        self.setFixedWidth(160)
+
         self.setObjectName("battery_popup")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(6)
 
+        battery_layout = QHBoxLayout()
+        battery_layout.setSpacing(2)
+
         self.icon = QLabel()
-        self.icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.percentage_label = QLabel("Percentage: –")
-        self.percentage_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.percentage_label = QLabel("–")
+        self.percentage_label.setObjectName("percentage_label")
 
-        self.voltage_label = QLabel("Voltage: –")
-        self.voltage_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.percent_sign_label = QLabel("%")
+        self.percent_sign_label.setObjectName("percentage_sign_label")
 
-        self.current_label = QLabel("Current: –")
-        self.current_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        battery_layout.addStretch()
+        battery_layout.addWidget(self.icon)
+        battery_layout.addWidget(self.percentage_label)
+        battery_layout.addWidget(self.percent_sign_label)
+        battery_layout.addStretch()
 
-        self.voltage_min_label = QLabel("Voltage Minimum: –")
-        self.voltage_min_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        voltage_layout = QHBoxLayout()
+        current_layout = QHBoxLayout()
+        voltage_min_layout = QHBoxLayout()
+        voltage_max_layout = QHBoxLayout()
+        name_layout = QHBoxLayout()
+        technology_layout = QHBoxLayout()
 
-        self.voltage_max_label = QLabel("Voltage Maximum: –")
-        self.voltage_max_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.voltage_label = QLabel("Voltage:")
+        self.voltage_label.setObjectName("voltage_label")
+        self.voltage_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-        self.name_label = QLabel("Battery name: –")
-        self.name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.voltage_value_label = QLabel("–")
+        self.voltage_value_label.setObjectName("voltage_value_label")
+        self.voltage_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
 
-        self.technology_label = QLabel("Battery technology: –")
-        self.technology_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        voltage_layout.addWidget(self.voltage_label)
+        voltage_layout.addStretch()
+        voltage_layout.addWidget(self.voltage_value_label)
 
-        layout.addWidget(self.icon)
-        layout.addWidget(self.percentage_label)
-        layout.addWidget(self.voltage_label)
-        layout.addWidget(self.current_label)
-        layout.addWidget(self.voltage_min_label)
-        layout.addWidget(self.voltage_max_label)
-        layout.addWidget(self.name_label)
-        layout.addWidget(self.technology_label)
+        self.current_label = QLabel("Current:")
+        self.current_label.setObjectName("current_label")
+        self.current_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        self.current_value_label = QLabel("–")
+        self.current_value_label.setObjectName("current_value_label")
+        self.current_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        current_layout.addWidget(self.current_label)
+        current_layout.addStretch()
+        current_layout.addWidget(self.current_value_label)
+
+        self.voltage_min_label = QLabel("Voltage min:")
+        self.voltage_min_label.setObjectName("voltage_min_label")
+        self.voltage_min_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        self.voltage_min_value_label = QLabel("–")
+        self.voltage_min_value_label.setObjectName("voltage_min_value_label")
+        self.voltage_min_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        voltage_min_layout.addWidget(self.voltage_min_label)
+        voltage_min_layout.addStretch()
+        voltage_min_layout.addWidget(self.voltage_min_value_label)
+
+        self.voltage_max_label = QLabel("Voltage max:")
+        self.voltage_max_label.setObjectName("voltage_max_label")
+        self.voltage_max_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        self.voltage_max_value_label = QLabel("–")
+        self.voltage_max_value_label.setObjectName("voltage_max_value_label")
+        self.voltage_max_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        voltage_max_layout.addWidget(self.voltage_max_label)
+        voltage_max_layout.addStretch()
+        voltage_max_layout.addWidget(self.voltage_max_value_label)
+
+        self.name_label = QLabel("Name:")
+        self.name_label.setObjectName("name_label")
+        self.name_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        self.name_value_label = QLabel("–")
+        self.name_value_label.setObjectName("name_value_label")
+        self.name_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        name_layout.addWidget(self.name_label)
+        name_layout.addStretch()
+        name_layout.addWidget(self.name_value_label)
+
+        self.technology_label = QLabel("Technology:")
+        self.technology_label.setObjectName("technology_label")
+        self.technology_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        self.technology_value_label = QLabel("–")
+        self.technology_value_label.setObjectName("technology_value_label")
+        self.technology_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        technology_layout.addWidget(self.technology_label)
+        technology_layout.addStretch()
+        technology_layout.addWidget(self.technology_value_label)
+
+        layout.addLayout(battery_layout)
+        layout.addLayout(voltage_layout)
+        layout.addLayout(current_layout)
+        layout.addLayout(voltage_min_layout)
+        layout.addLayout(voltage_max_layout)
+        layout.addLayout(name_layout)
+        layout.addLayout(technology_layout)
 
     def calculate_battery_percentage(self, data):
         try:
@@ -73,13 +147,13 @@ class BatteryPopup(QFrame):
         name = data.get("POWER_SUPPLY_NAME", "–")
         technology = data.get("POWER_SUPPLY_TECHNOLOGY", "–")
 
-        self.percentage_label.setText(f"Percentage: {percentage}%")
-        self.voltage_label.setText(f"Voltage: {voltage} V")
-        self.current_label.setText(f"Current: {current} A")
-        self.voltage_min_label.setText(f"Voltage Minimum: {voltage_min} V")
-        self.voltage_max_label.setText(f"Voltage Maximum: {voltage_max} V")
-        self.name_label.setText(f"Battery name: {name}")
-        self.technology_label.setText(f"Battery technology: {technology}")
+        self.percentage_label.setText(f"{percentage}")
+        self.voltage_value_label.setText(f"{voltage} V")
+        self.current_value_label.setText(f"{current} A")
+        self.voltage_min_value_label.setText(f"{voltage_min} V")
+        self.voltage_max_value_label.setText(f"{voltage_max} V")
+        self.name_value_label.setText(f"{name}")
+        self.technology_value_label.setText(f"{technology}")
 
         if percentage <= 20:
             icon = "battery-20.svg"
