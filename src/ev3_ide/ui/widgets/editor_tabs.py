@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QMessageBox
 from PySide6.QtCore import Signal, QSize
 from PySide6.QtGui import QIcon, QShortcut, QKeySequence
 from ev3_ide.ui.widgets.code_editor import CodeEditor
@@ -6,6 +6,8 @@ from ev3_ide.core.resources import resource_path
 
 
 class EditorTab(QWidget):
+    mark_unsaved = Signal()
+
     def __init__(self, data):
         super().__init__()
 
@@ -18,20 +20,24 @@ class EditorTab(QWidget):
         self.executable = data["executable"]
         self.editable = data["editable"]
 
+        self.modified = False
+
         self.editor = CodeEditor(self.path)
         self.editor.setPlainText(self.content)
         self.editor.setReadOnly(not self.editable)
-
-        self.modified = False
+        self.editor.textChanged.connect(self.on_text_changed)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.editor)
 
+    def on_text_changed(self):
+        if not self.modified:
+            self.modified = True
+            self.mark_unsaved.emit()
+
 
 class EditorTabs(QTabWidget):
-    file_changed = Signal(dict)
-
     def __init__(self):
         super().__init__()
         self.setObjectName("editor_tabs")
@@ -39,7 +45,7 @@ class EditorTabs(QTabWidget):
         self.setTabsClosable(True)
         self.setMovable(True)
         self.setIconSize(QSize(18, 18))
-        self.tabCloseRequested.connect(self._close_tab)
+        self.tabCloseRequested.connect(self.close_tab)
         # Shortcuts
         self.close_tab_shortcut = QShortcut(QKeySequence("Ctrl+W"), self)
         self.close_tab_shortcut.activated.connect(self.close_current_tab)
@@ -56,7 +62,7 @@ class EditorTabs(QTabWidget):
                 self.setCurrentIndex(index)
                 return
         tab = EditorTab(data)
-        tab.editor.textChanged.connect(lambda: self.file_changed.emit({"path": tab.path, "content": tab.editor.toPlainText()}))
+        tab.mark_unsaved.connect(lambda: self.mark_tab_modified(tab))
         index = self.addTab(tab, tab.name)
         self.setTabToolTip(index, tab.path)
         if not tab.editable:
@@ -102,7 +108,7 @@ class EditorTabs(QTabWidget):
     def close_current_tab(self):
         index = self.currentIndex()
         if index >= 0:
-            self._close_tab(index)
+            self.close_tab(index)
 
     def next_tab(self):
         if self.count() == 0:
@@ -117,6 +123,31 @@ class EditorTabs(QTabWidget):
         index = self.currentIndex()
         previous_index = (index - 1) % self.count()
         self.setCurrentIndex(previous_index)
+
+    def mark_tab_modified(self, tab):
+        if not tab.editable:
+            return
+        index = self.indexOf(tab)
+        self.setTabText(index, f"{tab.name} *")
+
+    def unmark_tab_modified(self, path):
+        for index in range(self.count()):
+            tab = self.widget(index)
+            if isinstance(tab, EditorTab) and tab.path == path:
+                tab.modified = False
+                self.setTabText(index, tab.name)
+                return
+
+    def close_tab(self, index):
+        tab = self.widget(index)
+        if isinstance(tab, EditorTab) and tab.modified:
+            result = QMessageBox.question(self, "Unsaved Changes", f"Die Datei „{tab.name}“ wurde geändert.\n" "Möchtest du die Änderungen speichern?", QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel)
+            if result == QMessageBox.StandardButton.Cancel:
+                return
+            if result == QMessageBox.StandardButton.Save:
+                # später: Speichern
+                return
+        self._close_tab(index)
 
     def _close_tab(self, index):
         self.removeTab(index)
