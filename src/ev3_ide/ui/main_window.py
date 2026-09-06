@@ -133,9 +133,11 @@ class MainWindow(QMainWindow):
         self.ev3_handler.ev3_disconnected.connect(lambda: self.title_bar.set_connection_state("• Disconnected"))
         self.ev3_handler.directory_updated.connect(self.left_sidebar.update_directory)
         self.ev3_handler.file_loaded.connect(self.open_editor_tab)
-        self.ev3_handler.file_written.connect(self.handle_file_written)
+        self.ev3_handler.file_written.connect(self.editor_tabs.handle_file_written)
         self.ev3_handler.battery_updated.connect(self.title_bar.set_battery_state)
         self.ev3_handler.error.connect(self.handle_error)
+
+        self.editor_tabs.save_requested.connect(self.ev3_handler.save_file)
 
         self.left_sidebar.item_clicked.connect(self.handle_left_clicked)
         self.left_sidebar.item_right_clicked.connect(self.handle_right_clicked)
@@ -152,9 +154,6 @@ class MainWindow(QMainWindow):
         if tab is None:
             return
         self.ev3_handler.save_file(tab.path, tab.editor.toPlainText())
-
-    def handle_file_written(self, path):
-        self.editor_tabs.unmark_tab_modified(path)
 
     # Code-Editor-Logik
     def handle_left_clicked(self, data):

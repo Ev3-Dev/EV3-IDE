@@ -38,6 +38,8 @@ class EditorTab(QWidget):
 
 
 class EditorTabs(QTabWidget):
+    save_requested = Signal(str, str)
+
     def __init__(self):
         super().__init__()
         self.setObjectName("editor_tabs")
@@ -46,6 +48,7 @@ class EditorTabs(QTabWidget):
         self.setMovable(True)
         self.setIconSize(QSize(18, 18))
         self.tabCloseRequested.connect(self.close_tab)
+        self.pending_close_path = None
         # Shortcuts
         self.close_tab_shortcut = QShortcut(QKeySequence("Ctrl+W"), self)
         self.close_tab_shortcut.activated.connect(self.close_current_tab)
@@ -138,16 +141,37 @@ class EditorTabs(QTabWidget):
                 self.setTabText(index, tab.name)
                 return
 
+    def handle_file_written(self, path):
+        self.unmark_tab_modified(path)
+        if path != self.pending_close_path:
+            return
+        self.pending_close_path = None
+        for index in range(self.count()):
+            tab = self.widget(index)
+            if isinstance(tab, EditorTab) and tab.path == path:
+                self._close_tab(index)
+                return
+
     def close_tab(self, index):
+        if self.pending_close_path is not None:
+            return
         tab = self.widget(index)
-        if isinstance(tab, EditorTab) and tab.modified:
-            result = QMessageBox.question(self, "Unsaved Changes", f"Die Datei „{tab.name}“ wurde geändert.\n" "Möchtest du die Änderungen speichern?", QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel)
-            if result == QMessageBox.StandardButton.Cancel:
-                return
-            if result == QMessageBox.StandardButton.Save:
-                # später: Speichern
-                return
-        self._close_tab(index)
+        if not isinstance(tab, EditorTab):
+            self._close_tab(index)
+            return
+        if not tab.modified:
+            self._close_tab(index)
+            return
+        result = QMessageBox.question(self, "Unsaved Changes", f"The file “{tab.name}” has been modified.\nDo you want to save your changes?", QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel)
+        if result == QMessageBox.StandardButton.Cancel:
+            return
+        if result == QMessageBox.StandardButton.Discard:
+            self._close_tab(index)
+            return
+        if result == QMessageBox.StandardButton.Save:
+            self.pending_close_path = tab.path
+            self.save_requested.emit(tab.path, tab.editor.toPlainText())
+            return
 
     def _close_tab(self, index):
         self.removeTab(index)
