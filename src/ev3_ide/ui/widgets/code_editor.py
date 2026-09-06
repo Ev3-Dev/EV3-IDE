@@ -17,6 +17,9 @@ class LineNumberArea(QWidget):
     def paintEvent(self, event):
         self.code_editor.paint_line_numbers(event)
 
+    def wheelEvent(self, event):
+        self.code_editor.wheelEvent(event)
+
 
 class CodeEditor(QPlainTextEdit):
     _font_id = None
