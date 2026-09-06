@@ -21,6 +21,7 @@ class EditorTab(QWidget):
         self.editable = data["editable"]
 
         self.modified = False
+        self.save_in_progress = False
 
         self.editor = CodeEditor(self.path)
         self.editor.setPlainText(self.content)
@@ -59,11 +60,10 @@ class EditorTabs(QTabWidget):
 
     def open_tab(self, data):
         # Datei bereits geöffnet?
-        for index in range(self.count()):
-            tab = self.widget(index)
-            if isinstance(tab, EditorTab) and tab.path == data["path"]:
-                self.setCurrentIndex(index)
-                return
+        index, tab = self.find_tab(data["path"])
+        if tab is not None:
+            self.setCurrentIndex(index)
+            return
         tab = EditorTab(data)
         tab.mark_unsaved.connect(lambda: self.mark_tab_modified(tab))
         index = self.addTab(tab, tab.name)
@@ -76,11 +76,9 @@ class EditorTabs(QTabWidget):
         self.open_tab(data)
 
     def focus_tab(self, path):
-        for index in range(self.count()):
-            tab = self.widget(index)
-            if isinstance(tab, EditorTab) and tab.path == path:
-                self.setCurrentIndex(index)
-                return
+        index, tab = self.find_tab(path)
+        if tab is not None:
+            self.setCurrentIndex(index)
 
     def current_tab(self):
         tab = self.currentWidget()
@@ -127,30 +125,32 @@ class EditorTabs(QTabWidget):
         previous_index = (index - 1) % self.count()
         self.setCurrentIndex(previous_index)
 
+    def find_tab(self, path):
+        for index in range(self.count()):
+            tab = self.widget(index)
+            if isinstance(tab, EditorTab) and tab.path == path:
+                return index, tab
+        return None, None
+
     def mark_tab_modified(self, tab):
         if not tab.editable:
             return
         index = self.indexOf(tab)
         self.setTabText(index, f"{tab.name} *")
 
-    def unmark_tab_modified(self, path):
-        for index in range(self.count()):
-            tab = self.widget(index)
-            if isinstance(tab, EditorTab) and tab.path == path:
-                tab.modified = False
-                self.setTabText(index, tab.name)
-                return
-
     def handle_file_written(self, path):
-        self.unmark_tab_modified(path)
+        index, tab = self.find_tab(path)
+        if tab is None:
+            return
+        # Auf dem Tab das * entfernen
+        tab.save_in_progress = False
+        tab.modified = False
+        self.setTabText(index, tab.name)
+        # Schließen, wenn über die MessageBox "Save" gedrückt wurde
         if path != self.pending_close_path:
             return
         self.pending_close_path = None
-        for index in range(self.count()):
-            tab = self.widget(index)
-            if isinstance(tab, EditorTab) and tab.path == path:
-                self._close_tab(index)
-                return
+        self._close_tab(index)
 
     def close_tab(self, index):
         if self.pending_close_path is not None:
@@ -158,6 +158,8 @@ class EditorTabs(QTabWidget):
         tab = self.widget(index)
         if not isinstance(tab, EditorTab):
             self._close_tab(index)
+            return
+        if tab.save_in_progress:
             return
         if not tab.modified:
             self._close_tab(index)
@@ -169,6 +171,7 @@ class EditorTabs(QTabWidget):
             self._close_tab(index)
             return
         if result == QMessageBox.StandardButton.Save:
+            tab.save_in_progress = True
             self.pending_close_path = tab.path
             self.save_requested.emit(tab.path, tab.editor.toPlainText())
             return

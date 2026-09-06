@@ -153,6 +153,11 @@ class MainWindow(QMainWindow):
         tab = self.editor_tabs.current_tab()
         if tab is None:
             return
+        if not tab.editable:
+            return
+        if tab.save_in_progress:
+            return
+        tab.save_in_progress = True
         self.ev3_handler.save_file(tab.path, tab.editor.toPlainText())
 
     # Code-Editor-Logik
