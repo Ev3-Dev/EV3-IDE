@@ -17,7 +17,7 @@ class SFTPWorker(QObject):
 
     output_received = Signal(str)
     process_finished = Signal(int)
-    error = Signal(dict)
+    notification = Signal(dict)
 
     def __init__(self, sftp):
         super().__init__()
@@ -47,7 +47,7 @@ class SFTPWorker(QObject):
             try:
                 function(*args)
             except Exception as e:
-                self.error.emit({"message": str(e), "type": "error"})
+                self.notification.emit({"type": "error", "title": "Cannot run task", "message": str(e)})
             finally:
                 self.queue.task_done()
 
@@ -89,7 +89,7 @@ class SFTPWorker(QObject):
                 })
             self.directory_updated.emit(result)
         except Exception as e:
-            self.error.emit({"message": str(e), "type": "error"})
+            self.notification.emit({"type": "error", "title": "Cannot list directory", "message": str(e)})
 
     def get_file(self, data):
         path = data["path"]
@@ -99,18 +99,18 @@ class SFTPWorker(QObject):
             with self.sftp.open(path, "rb") as file:
                 header = file.read(4096)
                 if header.startswith(b"\x1f\x8b"):
-                    self.error.emit({"path": path, "message": "GZIP-Dateien können nicht als Text geöffnet werden."})
+                    self.notification.emit({"type": "error", "title": "Cannot open file", "message": f"File '{posixpath.basename(path)}' cannot be opened in the text editor."})
                     return
                 if b"\x00" in header:
-                    self.error.emit({"path": path, "message": "Die Datei scheint eine Binärdatei zu sein."})
+                    self.notification.emit({"type": "error", "title": "Cannot open file", "message": f"File '{posixpath.basename(path)}' is binary and cannot be opened in the text editor."})
                     return
                 data_read = header + file.read()
             content = data_read.decode("utf-8")
             self.file_loaded.emit({**data, "content": content})
         except UnicodeDecodeError:
-            self.error.emit({"path": path, "message": "Die Datei ist keine UTF-8-Textdatei."})
+            self.notification.emit({"type": "error", "title": "Cannot open file", "message": f"File '{posixpath.basename(path)}' is not a UTF-8 encoded file."})
         except Exception as e:
-            self.error.emit({"path": path, "message": str(e)})
+            self.notification.emit({"type": "error", "title": "Cannot open file", "message": f"An unknown error occurred while trying to open file '{posixpath.basename(path)}'."})
 
     def write_file(self, path, content):
         if not self.is_connected():
@@ -120,7 +120,7 @@ class SFTPWorker(QObject):
                 file.write(content)
             self.file_written.emit(path)
         except Exception as e:
-            self.error.emit({"path": path, "message": str(e), "type": "error"})
+            self.notification.emit({"type": "error", "title": "Cannot overwrite file", "message": f"An unknown error occurred while trying to overwrite file '{posixpath.basename(path)}'."})
 
     def go_back(self):
         self.list_dir(posixpath.dirname(self.current_path))
@@ -144,7 +144,7 @@ class SFTPWorker(QObject):
                         values[key] = value
                 self.battery_updated.emit(values)
         except Exception as e:
-            self.error.emit({"message": str(e), "type": "battery"})
+            self.notification.emit({"type": "error", "title": "Cannot check battery", "message": f"An unknown error occurred while trying to check the battery percentage state."})
 
 
 class EV3Handler(QObject):
@@ -158,7 +158,7 @@ class EV3Handler(QObject):
 
     output_received = Signal(str)
     process_finished = Signal(int)
-    error = Signal(dict)
+    notification = Signal(dict)
 
     def __init__(self):
         super().__init__()
@@ -212,7 +212,7 @@ class EV3Handler(QObject):
         self._worker.battery_updated.connect(self.battery_updated)
         self._worker.output_received.connect(self.output_received)
         self._worker.process_finished.connect(self.process_finished)
-        self._worker.error.connect(self.error)
+        self._worker.notification.connect(self.notification)
 
         self._worker_thread = threading.Thread(target=self._worker.run, daemon=True)
 
@@ -236,11 +236,11 @@ class EV3Handler(QObject):
         if self._worker is None:
             return
         if path in PROTECTED_FILES:
-            self.error.emit({"path": str(path), "type": "error"})
+            self.notification.emit({"type": "error", "title": "Cannot save file", "message": f"File '{posixpath.basename(path)}' is protected.\nYou cannot edit this file."})
             return
         for protected_path in PROTECTED_PATHS:
             if path == protected_path or path.startswith(protected_path + "/"):
-                self.error.emit({"path": str(path), "type": "error"})
+                self.notification.emit({"type": "error", "title": "Cannot save file", "message": f"File '{posixpath.basename(path)}' is protected.\nYou cannot edit this file."})
                 return
         print(f"Saving file: {path} with content: {content}")
         self._worker.enqueue(self._worker.write_file, path, content)

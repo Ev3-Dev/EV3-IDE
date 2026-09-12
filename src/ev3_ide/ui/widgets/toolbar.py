@@ -170,6 +170,7 @@ class BatteryPopup(QFrame):
             icon = "battery-100.svg"
 
         self.icon.setPixmap(QIcon(resource_path(f"ui/icons/{icon}")).pixmap(QSize(32, 32)))
+        self.ev3_frame.update()
 
     def hideEvent(self, event):
         super().hideEvent(event)

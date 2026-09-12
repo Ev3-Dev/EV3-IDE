@@ -12,6 +12,7 @@ from ev3_ide.ui.widgets.editor_tabs import EditorTabs
 from ev3_ide.ui.widgets.bottom_tabs import BottomTabs
 
 from ev3_ide.core.ev3_handler import EV3Handler
+from ev3_ide.ui.widgets.notification import NotificationManager
 
 
 WM_NCHITTEST = 0x0084
@@ -129,13 +130,15 @@ class MainWindow(QMainWindow):
         self.ev3_handler = EV3Handler()
         self.ev3_handler.start_session()
 
+        self.notification_manager = NotificationManager(self)
+
         self.ev3_handler.ev3_connected.connect(lambda: self.title_bar.set_connection_state("• Connected"))
         self.ev3_handler.ev3_disconnected.connect(lambda: self.title_bar.set_connection_state("• Disconnected"))
         self.ev3_handler.directory_updated.connect(self.left_sidebar.update_directory)
         self.ev3_handler.file_loaded.connect(self.open_editor_tab)
         self.ev3_handler.file_written.connect(self.editor_tabs.handle_file_written)
         self.ev3_handler.battery_updated.connect(self.title_bar.set_battery_state)
-        self.ev3_handler.error.connect(self.handle_error)
+        self.ev3_handler.notification.connect(self.handle_notification)
 
         self.editor_tabs.save_requested.connect(self.ev3_handler.save_file)
 
@@ -185,8 +188,8 @@ class MainWindow(QMainWindow):
     def handle_files_refresh(self):
         self.ev3_handler.refresh()
 
-    def handle_error(self, data):
-        print(f"Error: {data}")
+    def handle_notification(self, data):
+        self.notification_manager.show(notification_type=data["type"], title=data["title"], message=data["message"])
 
     # MainWindow-Funktionen
     def update_splitter_handle(self, splitter):
@@ -291,6 +294,11 @@ class MainWindow(QMainWindow):
             return True, HTCLIENT
 
         return super().nativeEvent(eventType, message)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if hasattr(self, "notification_manager"):
+            self.notification_manager.reposition(False)
 
     def closeEvent(self, event):
         self.ev3_handler.stop()

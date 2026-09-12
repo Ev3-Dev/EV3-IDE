@@ -231,16 +231,20 @@ QFrame#left_sidebar {
 }
 
 QComboBox#left_sidebar_dropdown {
-    background-color: #2e2f30;
+    /* background-color: #2e2f30; */
+    background-color: transparent;
     padding: 0px 0px 1px 4px;
-    font-size: 14px;
+    border: 1px solid #313333;
+    border-radius: 4px;
     color: #cdd2d0;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 QFrame#combo_popup {
     background-color: #2e2f30;
     border: 1px solid #434447;
-    border-radius: 4px;
+    border-radius: 5px;
 }
 
 QPushButton#combo_item {
@@ -321,4 +325,29 @@ QPushButton#btn_install {
 
 QPushButton#btn_install:hover {
     background-color: #404040;
+}
+
+/* -------- Notification -------- */
+
+QFrame#notification {
+    background-color: #3d3d43;
+    border: none;
+    border-radius: 5px;
+}
+
+QLabel#notification_title {
+    color: #d4d4d4;
+    font-weight: 680;
+}
+
+QPushButton#notification_close_button {
+    background-color: #3d3d43;
+}
+
+QPushButton#notification_close_button:hover {
+    background-color: #5c5c61;
+}
+
+QLabel#notification_message {
+    color: #d4d4d4;
 }
