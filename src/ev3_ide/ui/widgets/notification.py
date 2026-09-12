@@ -7,6 +7,7 @@ from ev3_ide.core.resources import resource_path
 
 class Notification(QFrame):
     closed = Signal()
+    NOTIFICATION_ICONS = {"error": "ui/icons/notification_error.svg", "warning": "ui/icons/notification_warning.svg"}
 
     def __init__(self, title, message, notification_type="error", parent=None):
         super().__init__(parent)
@@ -17,6 +18,9 @@ class Notification(QFrame):
 
         self.setObjectName("notification")
         self.setFixedWidth(320)
+        self.minimum_height = 75
+
+        self.timer_duration = 6000
 
         self.animation = QPropertyAnimation(self, b"pos")
         self.animation.setDuration(300)
@@ -30,6 +34,12 @@ class Notification(QFrame):
         self.go_up_animation = QPropertyAnimation(self, b"pos")
         self.go_up_animation.setDuration(300)
         self.go_up_animation.setEasingCurve(QEasingCurve.Type.OutBack)
+
+        self.icon_label = QLabel()
+        self.icon_label.setFixedSize(18, 18)
+        icon_path = self.NOTIFICATION_ICONS.get(notification_type)
+        if icon_path:
+            self.icon_label.setPixmap(QIcon(resource_path(icon_path)).pixmap(18, 18))
 
         self.title_label = QLabel(title)
         self.title_label.setFont(QFont("Arial", 11))
@@ -47,17 +57,19 @@ class Notification(QFrame):
         self.message_label.setWordWrap(True)
 
         title_layout = QHBoxLayout()
+        title_layout.setSpacing(5)
+        title_layout.addWidget(self.icon_label)
         title_layout.addWidget(self.title_label)
         title_layout.addStretch()
         title_layout.addWidget(self.close_button)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(11, 8, 9, 8)
-        # layout.setSpacing(8)
+        layout.setContentsMargins(9, 8, 9, 8)
 
         layout.addLayout(title_layout)
         layout.addStretch()
         layout.addWidget(self.message_label)
+        layout.addStretch()
 
         self.timer = QTimer(self)
         self.timer.setSingleShot(True)
@@ -69,6 +81,7 @@ class Notification(QFrame):
         self.go_up_animation.stop()
 
     def show_notification(self, target_pos, duration=6000):
+        self.timer_duration = duration
         self.update_size()
         self.show()
         self.raise_()
@@ -77,7 +90,7 @@ class Notification(QFrame):
         self.animation.setStartValue(start_pos)
         self.animation.setEndValue(target_pos)
         self.animation.start()
-        self.timer.start(duration)
+        self.timer.start(self.timer_duration)
 
     def animate_to(self, target_pos):
         self.stop_all_animations()
@@ -99,7 +112,15 @@ class Notification(QFrame):
         self.message_label.setFixedWidth(contents_width)
         message_height = self.message_label.heightForWidth(contents_width)
         height = self.layout().contentsMargins().top() + self.title_label.sizeHint().height() + self.layout().spacing() + message_height + self.layout().contentsMargins().bottom()
-        self.setFixedHeight(height)
+        self.setFixedHeight(max(self.minimum_height, height))
+
+    def enterEvent(self, event):
+        self.timer.stop()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.timer.start(self.timer_duration)
+        super().leaveEvent(event)
 
 
 class NotificationManager:
