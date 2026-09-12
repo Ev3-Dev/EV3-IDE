@@ -342,6 +342,8 @@ QLabel#notification_title {
 
 QPushButton#notification_close_button {
     background-color: #3d3d43;
+    border: none;
+    border-radius: 5px;
 }
 
 QPushButton#notification_close_button:hover {

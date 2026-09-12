@@ -18,7 +18,7 @@ class Notification(QFrame):
 
         self.setObjectName("notification")
         self.setFixedWidth(320)
-        self.minimum_height = 75
+        self.minimum_height = 72
 
         self.timer_duration = 6000
 
@@ -57,18 +57,24 @@ class Notification(QFrame):
         self.message_label.setWordWrap(True)
 
         title_layout = QHBoxLayout()
-        title_layout.setSpacing(5)
+        title_layout.setSpacing(8)
         title_layout.addWidget(self.icon_label)
         title_layout.addWidget(self.title_label)
         title_layout.addStretch()
         title_layout.addWidget(self.close_button)
+
+        content_layout = QHBoxLayout()
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(0)
+        content_layout.addSpacing(26)
+        content_layout.addWidget(self.message_label)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(9, 8, 9, 8)
 
         layout.addLayout(title_layout)
         layout.addStretch()
-        layout.addWidget(self.message_label)
+        layout.addLayout(content_layout)
         layout.addStretch()
 
         self.timer = QTimer(self)
@@ -108,7 +114,7 @@ class Notification(QFrame):
 
     def update_size(self):
         width = self.width()
-        contents_width = width - self.layout().contentsMargins().left() - self.layout().contentsMargins().right()
+        contents_width = width - self.layout().contentsMargins().left() - self.layout().contentsMargins().right() - 26
         self.message_label.setFixedWidth(contents_width)
         message_height = self.message_label.heightForWidth(contents_width)
         height = self.layout().contentsMargins().top() + self.title_label.sizeHint().height() + self.layout().spacing() + message_height + self.layout().contentsMargins().bottom()
