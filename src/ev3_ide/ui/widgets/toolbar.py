@@ -1,183 +1,13 @@
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLabel, QFrame
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel, QFrame
 from PySide6.QtCore import Qt, QSize, QEvent, QObject, Signal
 from PySide6.QtGui import QIcon, QKeySequence, QShortcut
+
 from ev3_ide.core.resources import resource_path
-
-
-class BatteryPopup(QFrame):
-    def __init__(self, ev3_frame, parent=None):
-        super().__init__(parent, Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
-
-        self.ev3_frame = ev3_frame
-
-        # self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
-        self.setFixedWidth(160)
-
-        self.setObjectName("battery_popup")
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 8, 10, 10)
-        layout.setSpacing(6)
-
-        battery_layout = QHBoxLayout()
-        battery_layout.setSpacing(2)
-        battery_layout.setContentsMargins(0, 0, 5, 0)
-
-        self.icon = QLabel()
-
-        self.percentage_label = QLabel("–")
-        self.percentage_label.setObjectName("percentage_label")
-
-        self.percent_sign_label = QLabel("%")
-        self.percent_sign_label.setObjectName("percentage_sign_label")
-
-        battery_layout.addStretch()
-        battery_layout.addWidget(self.icon)
-        battery_layout.addWidget(self.percentage_label)
-        battery_layout.addWidget(self.percent_sign_label)
-        battery_layout.addStretch()
-
-        voltage_layout = QHBoxLayout()
-        current_layout = QHBoxLayout()
-        voltage_min_layout = QHBoxLayout()
-        voltage_max_layout = QHBoxLayout()
-        name_layout = QHBoxLayout()
-        technology_layout = QHBoxLayout()
-
-        self.voltage_label = QLabel("Voltage:")
-        self.voltage_label.setObjectName("voltage_label")
-        self.voltage_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
-        self.voltage_value_label = QLabel("–")
-        self.voltage_value_label.setObjectName("voltage_value_label")
-        self.voltage_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        voltage_layout.addWidget(self.voltage_label)
-        voltage_layout.addStretch()
-        voltage_layout.addWidget(self.voltage_value_label)
-
-        self.current_label = QLabel("Current:")
-        self.current_label.setObjectName("current_label")
-        self.current_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
-        self.current_value_label = QLabel("–")
-        self.current_value_label.setObjectName("current_value_label")
-        self.current_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        current_layout.addWidget(self.current_label)
-        current_layout.addStretch()
-        current_layout.addWidget(self.current_value_label)
-
-        self.voltage_min_label = QLabel("Voltage min:")
-        self.voltage_min_label.setObjectName("voltage_min_label")
-        self.voltage_min_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
-        self.voltage_min_value_label = QLabel("–")
-        self.voltage_min_value_label.setObjectName("voltage_min_value_label")
-        self.voltage_min_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        voltage_min_layout.addWidget(self.voltage_min_label)
-        voltage_min_layout.addStretch()
-        voltage_min_layout.addWidget(self.voltage_min_value_label)
-
-        self.voltage_max_label = QLabel("Voltage max:")
-        self.voltage_max_label.setObjectName("voltage_max_label")
-        self.voltage_max_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
-        self.voltage_max_value_label = QLabel("–")
-        self.voltage_max_value_label.setObjectName("voltage_max_value_label")
-        self.voltage_max_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        voltage_max_layout.addWidget(self.voltage_max_label)
-        voltage_max_layout.addStretch()
-        voltage_max_layout.addWidget(self.voltage_max_value_label)
-
-        self.name_label = QLabel("Name:")
-        self.name_label.setObjectName("name_label")
-        self.name_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
-        self.name_value_label = QLabel("–")
-        self.name_value_label.setObjectName("name_value_label")
-        self.name_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        name_layout.addWidget(self.name_label)
-        name_layout.addStretch()
-        name_layout.addWidget(self.name_value_label)
-
-        self.technology_label = QLabel("Technology:")
-        self.technology_label.setObjectName("technology_label")
-        self.technology_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
-        self.technology_value_label = QLabel("–")
-        self.technology_value_label.setObjectName("technology_value_label")
-        self.technology_value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        technology_layout.addWidget(self.technology_label)
-        technology_layout.addStretch()
-        technology_layout.addWidget(self.technology_value_label)
-
-        layout.addLayout(battery_layout)
-        layout.addLayout(voltage_layout)
-        layout.addLayout(current_layout)
-        layout.addLayout(voltage_min_layout)
-        layout.addLayout(voltage_max_layout)
-        layout.addLayout(name_layout)
-        layout.addLayout(technology_layout)
-
-    def calculate_battery_percentage(self, data):
-        try:
-            voltage_now = int(data.get("POWER_SUPPLY_VOLTAGE_NOW", "0")) / 1000000
-            voltage_min = int(data.get("POWER_SUPPLY_VOLTAGE_MIN_DESIGN", "0")) / 10000000
-            voltage_max = int(data.get("POWER_SUPPLY_VOLTAGE_MAX_DESIGN", "0")) / 10000000
-            return round(max(0, min(100, (voltage_now - voltage_min) / (voltage_max - voltage_min) * 100)))
-        except ZeroDivisionError:
-            return 0
-
-    def set_battery_state(self, data):
-        # POWER_SUPPLY_NAME=lego-ev3-battery
-        # POWER_SUPPLY_TECHNOLOGY=Li-ion
-        # POWER_SUPPLY_VOLTAGE_NOW=7354000
-        # POWER_SUPPLY_VOLTAGE_MAX_DESIGN=84000000
-        # POWER_SUPPLY_VOLTAGE_MIN_DESIGN=60000000
-        # POWER_SUPPLY_CURRENT_NOW=240000
-        # POWER_SUPPLY_SCOPE=System
-
-        percentage = self.calculate_battery_percentage(data)
-        voltage = round(float(data.get("POWER_SUPPLY_VOLTAGE_NOW", "0")) / 1000000, 2)
-        current = round(float(data.get("POWER_SUPPLY_CURRENT_NOW", "0")) / 1000000, 2)
-        voltage_min = float(data.get("POWER_SUPPLY_VOLTAGE_MIN_DESIGN", "0")) / 10000000
-        voltage_max = float(data.get("POWER_SUPPLY_VOLTAGE_MAX_DESIGN", "0")) / 10000000
-        name = data.get("POWER_SUPPLY_NAME", "–")
-        technology = data.get("POWER_SUPPLY_TECHNOLOGY", "–")
-
-        self.percentage_label.setText(f"{percentage}")
-        self.voltage_value_label.setText(f"{voltage} V")
-        self.current_value_label.setText(f"{current} A")
-        self.voltage_min_value_label.setText(f"{voltage_min} V")
-        self.voltage_max_value_label.setText(f"{voltage_max} V")
-        self.name_value_label.setText(f"{name}")
-        self.technology_value_label.setText(f"{technology}")
-
-        if percentage <= 20:
-            icon = "battery-20.svg"
-        elif percentage <= 40:
-            icon = "battery-40.svg"
-        elif percentage <= 60:
-            icon = "battery-60.svg"
-        elif percentage <= 80:
-            icon = "battery-80.svg"
-        else:
-            icon = "battery-100.svg"
-
-        self.icon.setPixmap(QIcon(resource_path(f"ui/icons/{icon}")).pixmap(QSize(32, 32)))
-        self.ev3_frame.update()
-
-    def hideEvent(self, event):
-        super().hideEvent(event)
-        self.ev3_frame.update()
+from ev3_ide.ui.widgets.battery_popup import BatteryPopup
 
 
 class IDETitleBar(QWidget):
+    run_requested = Signal()
     save_requested = Signal()
 
     def __init__(self, parent=None):
@@ -191,7 +21,7 @@ class IDETitleBar(QWidget):
 
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(5, 0, 0, 0)
-        main_layout.setSpacing(5)
+        main_layout.setSpacing(10)
 
         self.ev3_frame = QFrame()
         self.ev3_frame.setObjectName("ev3_frame")
@@ -220,10 +50,20 @@ class IDETitleBar(QWidget):
         self.run_button = QPushButton("Run")
         self.run_button.setObjectName("run_button")
         self.run_button.setFixedSize(90, 30)
+        self.run_button.setIconSize(QSize(18, 18))
+        self.run_button.setIcon(QIcon(resource_path("ui/icons/run.svg")))
 
-        self.save_button = QPushButton("Save")
+        self.save_button = QPushButton(" Save")
         self.save_button.setObjectName("save_button")
         self.save_button.setFixedSize(90, 30)
+        self.save_button.setIconSize(QSize(17, 17))
+        self.save_button.setIcon(QIcon(resource_path("ui/icons/save.svg")))
+
+        toolbar_buttons_layout = QHBoxLayout()
+        toolbar_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        toolbar_buttons_layout.setSpacing(5)
+        toolbar_buttons_layout.addWidget(self.run_button)
+        toolbar_buttons_layout.addWidget(self.save_button)
 
         # EV3-Layout
         self.ev3_connection_label = QLabel("• Disconnected")
@@ -245,6 +85,13 @@ class IDETitleBar(QWidget):
         self.ev3_help_button = QPushButton("?")
         self.ev3_help_button.setObjectName("ev3_help_button")
         self.ev3_help_button.setFixedSize(30, 30)
+
+        ev3_right_layout = QHBoxLayout()
+        ev3_right_layout.setContentsMargins(0, 0, 0, 0)
+        ev3_right_layout.setSpacing(5)
+
+        ev3_right_layout.addWidget(self.ev3_frame)
+        ev3_right_layout.addWidget(self.ev3_help_button)
 
         # Windows-Buttons
         self.minimize_button = QPushButton()
@@ -270,20 +117,22 @@ class IDETitleBar(QWidget):
         windows_buttons_layout.addWidget(self.close_button)
 
         main_layout.addWidget(self.logo)
-        main_layout.addWidget(self.run_button)
-        main_layout.addWidget(self.save_button)
+        main_layout.addLayout(toolbar_buttons_layout)
         main_layout.addStretch(stretch=75)
-        main_layout.addWidget(self.ev3_frame)
-        main_layout.addWidget(self.ev3_help_button)
+        main_layout.addLayout(ev3_right_layout)
         main_layout.addStretch(stretch=1)
         main_layout.addLayout(windows_buttons_layout)
 
         self.ev3_frame.installEventFilter(self)
 
         # Shortcuts
+        self.run_button.clicked.connect(self.run_requested)
         self.save_action = QShortcut(QKeySequence("Ctrl+S"), self)
         self.save_action.activated.connect(self.save_requested)
         self.save_button.clicked.connect(self.save_requested)
+
+        self.run_button.setEnabled(False)
+        self.save_button.setEnabled(False)
 
     def set_connection_state(self, state):
         if state != self.ev3_state:
@@ -324,16 +173,25 @@ class IDETitleBar(QWidget):
     def set_maximize_icon(self, icon_name):
         self.maximize_button.setIcon(QIcon(resource_path(f"ui/icons/{icon_name}.svg")))
 
-    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
-        if watched is self.ev3_frame and event.type() == QEvent.Type.MouseButtonPress:
-            if event.button() == Qt.MouseButton.LeftButton:
-                self.on_frame_clicked()
-                return True
-        return super().eventFilter(watched, event)
-
     def on_frame_clicked(self):
         self.battery_popup.set_battery_state(self.battery_info)
         pos = self.ev3_frame.mapToGlobal(self.ev3_frame.rect().bottomLeft())
         pos.setY(pos.y() + 5)
         self.battery_popup.move(pos)
         self.battery_popup.show()
+
+    def update_toolbar(self, tab):
+        if tab is None:
+            self.run_button.setEnabled(False)
+            self.save_button.setEnabled(False)
+            return
+        self.save_button.setEnabled(tab.editable)
+        is_python = tab.path.lower().endswith(".py")
+        self.run_button.setEnabled(is_python or tab.executable)
+
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        if watched is self.ev3_frame and event.type() == QEvent.Type.MouseButtonPress:
+            if event.button() == Qt.MouseButton.LeftButton:
+                self.on_frame_clicked()
+                return True
+        return super().eventFilter(watched, event)

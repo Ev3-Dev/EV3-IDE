@@ -141,6 +141,7 @@ class MainWindow(QMainWindow):
         self.ev3_handler.notification.connect(self.handle_notification)
 
         self.editor_tabs.save_requested.connect(self.ev3_handler.save_file)
+        self.editor_tabs.currentChanged.connect(self.update_toolbar)
 
         self.left_sidebar.item_clicked.connect(self.handle_left_clicked)
         self.left_sidebar.item_right_clicked.connect(self.handle_right_clicked)
@@ -149,9 +150,21 @@ class MainWindow(QMainWindow):
         self.left_sidebar.refresh_requested.connect(self.handle_files_refresh)
 
         # Shortcuts
+        self.title_bar.run_requested.connect(self.run_current_file)
         self.title_bar.save_requested.connect(self.save_current_file)
 
     # Shortcut-Funktionen
+    def run_current_file(self):
+        tab = self.editor_tabs.current_tab()
+        if tab is None:
+            return
+        if not (tab.path.lower().endswith(".py") or tab.executable):
+            return
+        if tab.save_in_progress:
+            return
+        run_mode = "python" if tab.path.lower().endswith(".py") else "execute"
+        self.ev3_handler.run_file(tab.path, run_mode)
+
     def save_current_file(self):
         tab = self.editor_tabs.current_tab()
         if tab is None:
@@ -190,6 +203,10 @@ class MainWindow(QMainWindow):
 
     def handle_notification(self, data):
         self.notification_manager.show(notification_type=data["type"], title=data["title"], message=data["message"])
+
+    def update_toolbar(self):
+        tab = self.editor_tabs.current_tab()
+        self.title_bar.update_toolbar(tab)
 
     # MainWindow-Funktionen
     def update_splitter_handle(self, splitter):

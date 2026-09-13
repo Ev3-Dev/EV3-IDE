@@ -12,18 +12,20 @@ QMainWindow#main_window {
 
 /* Title-Bar */
 
-QPushButton#run_button {
+QPushButton#run_button, QPushButton#save_button {
     border: 1px solid #3c444a;
     border-radius: 5px;
-    color: white;
-    background-color: #2f3437;
+    color: #d4d4d4;
+    background-color: #304f60;
 }
 
-QPushButton#save_button {
-    border: 1px solid #3c444a;
-    border-radius: 5px;
-    color: white;
-    background-color: #2f3437;
+QPushButton#run_button:hover, QPushButton#save_button:hover {
+    background-color: #315f7a;
+}
+
+QPushButton#run_button:disabled, QPushButton#save_button:disabled {
+    color: gray;
+    background-color: #2d3033;
 }
 
 QFrame#ev3_frame {
@@ -234,7 +236,7 @@ QComboBox#left_sidebar_dropdown {
     /* background-color: #2e2f30; */
     background-color: transparent;
     padding: 0px 0px 1px 4px;
-    border: 1px solid #313333;
+    border: 0px solid #313333;
     border-radius: 4px;
     color: #cdd2d0;
     font-size: 14px;

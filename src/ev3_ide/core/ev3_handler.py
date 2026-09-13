@@ -146,6 +146,20 @@ class SFTPWorker(QObject):
         except Exception as e:
             self.notification.emit({"type": "error", "title": "Cannot check battery", "message": f"An unknown error occurred while trying to check the battery percentage state."})
 
+    def run_file(self, path, run_mode):
+        if not self.is_connected():
+            return
+        if run_mode == "python":
+            command = f"python3 {path}"
+        elif run_mode == "execute":
+            command = path
+        else:
+            self.notification.emit({"type": "error", "title": "Cannot run file", "message": f"Unknown run mode: {run_mode}"})
+            return
+        print(f"Running: {command}")
+
+        # hier später SSH-Ausführung
+
 
 class EV3Handler(QObject):
     ev3_connected = Signal()
@@ -257,8 +271,10 @@ class EV3Handler(QObject):
     def rename(self, old_path, new_path):
         pass
 
-    def run_file(self, path):
-        pass
+    def run_file(self, path, run_mode):
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.run_file, path, run_mode)
 
     def go_back(self):
         if self._worker is None:

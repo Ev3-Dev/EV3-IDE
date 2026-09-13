@@ -3,7 +3,7 @@ from PySide6.QtGui import QFont, QIcon
 from PySide6.QtCore import Signal, Qt, QPropertyAnimation, QEasingCurve
 
 from ev3_ide.core.resources import resource_path
-
+from ev3_ide.ui.widgets.new_file_dialog import NewMenu
 
 class SmoothScrollArea(QScrollArea):
     def __init__(self, parent=None):
@@ -50,10 +50,12 @@ class FilesWidget(QWidget):
         self.home_button.setObjectName("files_home_button")
         self.home_button.clicked.connect(self.home_requested)
 
+        self.dialog = NewMenu()
         self.new_button = QPushButton()
         self.new_button.setIcon(QIcon(resource_path("ui/icons/new.svg")))
         self.new_button.setFixedSize(30, 30)
         self.new_button.setObjectName("files_new_button")
+        self.new_button.clicked.connect(self.dialog.exec)
 
         self.refresh_button = QPushButton()
         self.refresh_button.setIcon(QIcon(resource_path("ui/icons/refresh.svg")))
