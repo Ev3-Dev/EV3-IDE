@@ -56,7 +56,7 @@ class IDETitleBar(QWidget):
         self.save_button = QPushButton(" Save")
         self.save_button.setObjectName("save_button")
         self.save_button.setFixedSize(90, 30)
-        self.save_button.setIconSize(QSize(17, 17))
+        self.save_button.setIconSize(QSize(16, 16))
         self.save_button.setIcon(QIcon(resource_path("ui/icons/save.svg")))
 
         toolbar_buttons_layout = QHBoxLayout()
