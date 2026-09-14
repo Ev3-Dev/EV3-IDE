@@ -13,10 +13,10 @@ class InstantComboBox(QComboBox):
         self.setFixedSize(110, 30)
         self.popup = QFrame(self.parent)
         self.popup.setObjectName("combo_popup")
-        self.popup.setFixedWidth(106)
+        self.popup.setFixedWidth(140)
 
         self.popup_layout = QVBoxLayout(self.popup)
-        self.popup_layout.setContentsMargins(1, 1, 1, 1)
+        self.popup_layout.setContentsMargins(3, 3, 3, 3)
         self.popup_layout.setSpacing(1)
         self.popup.adjustSize()
         self._build_popup()
@@ -26,8 +26,8 @@ class InstantComboBox(QComboBox):
 
     def _build_popup(self):
         for index, text in enumerate(["Files", "EV3 State", "Libraries"]):
-            button = QPushButton(text)
-            button.setFixedHeight(28)
+            button = QPushButton(f"  {text}")
+            button.setFixedHeight(26)
             button.setObjectName("combo_item")
             button.clicked.connect(lambda checked=False, button_index=index: self._select_item(button_index))
             self.popup_layout.addWidget(button)
@@ -38,7 +38,6 @@ class InstantComboBox(QComboBox):
 
     def showPopup(self):
         pos = self.mapTo(self.parent, self.rect().bottomLeft())
-        pos += QPoint(2, 4)
         self.popup.adjustSize()
         self.popup.move(pos)
         self.popup.raise_()
@@ -60,10 +59,10 @@ class InstantComboBox(QComboBox):
             return super().eventFilter(obj, event)
         if event.type() == QEvent.Type.MouseButtonPress:
             global_click_pos = event.globalPosition().toPoint()
-            local_click = self.mapFromGlobal(global_click_pos)
-            check_rect = self.popup.rect()
-            check_rect = check_rect.adjusted(0, 0, 0, 30)
-            if not check_rect.contains(local_click):
+            popup_rect = self.popup.rect()
+            popup_top_left = self.popup.mapToGlobal(popup_rect.topLeft())
+            popup_rect_global = popup_rect.translated(popup_top_left)
+            if not popup_rect_global.contains(global_click_pos):
                 self.popup.hide()
                 return False
         return super().eventFilter(obj, event)

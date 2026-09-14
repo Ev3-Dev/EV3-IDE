@@ -12,6 +12,18 @@ QMainWindow#main_window {
 
 /* Title-Bar */
 
+QPushButton#toolbar_menu_button {
+    border: 1px solid #3c444a;
+    border-radius: 6px;
+
+    color: #d4d4d4;
+    background-color: transparent;
+}
+
+QPushButton#toolbar_menu_button:hover {
+    background-color: #3c444a;
+}
+
 QPushButton#run_button, QPushButton#save_button {
     border: 1px solid #3c444a;
     border-radius: 5px;
@@ -246,7 +258,7 @@ QComboBox#left_sidebar_dropdown {
 QFrame#combo_popup {
     background-color: #2e2f30;
     border: 1px solid #434447;
-    border-radius: 5px;
+    border-radius: 6px;
 }
 
 QPushButton#combo_item {
@@ -256,6 +268,7 @@ QPushButton#combo_item {
     margin: 0px;
     padding: 0px;
 
+    text-align: left;
     font-size: 13px;
     color: #cdd2d0;
 }
@@ -270,6 +283,21 @@ QPushButton#files_back_button, QPushButton#files_home_button, QPushButton#files_
 
 QPushButton#files_back_button:hover, QPushButton#files_home_button:hover, QPushButton#files_new_button:hover, QPushButton#files_refresh_button:hover {
     background-color: #2e2f30;
+}
+
+QMenu#new_menu {
+    background-color: #424249;
+    color: #d4d4d4;
+    border: 0px;
+}
+
+QMenu#new_menu::item {
+    font-size: 13px;
+    padding: 6px 10px 6px 6px;
+}
+
+QMenu#new_menu::item:selected {
+    background-color: #545457;
 }
 
 /* Content-Area */

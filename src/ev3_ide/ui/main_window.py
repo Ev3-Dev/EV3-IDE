@@ -17,6 +17,7 @@ from ev3_ide.ui.widgets.notification import NotificationManager
 
 WM_NCHITTEST = 0x0084
 WM_NCCALCSIZE = 0x0083
+WM_NCLBUTTONDOWN = 0x00A1
 
 HTCLIENT = 1
 HTCAPTION = 2
@@ -208,6 +209,9 @@ class MainWindow(QMainWindow):
         tab = self.editor_tabs.current_tab()
         self.title_bar.update_toolbar(tab)
 
+    def close_popups(self):
+        self.left_sidebar.dropdown.popup.hide()
+
     # MainWindow-Funktionen
     def update_splitter_handle(self, splitter):
         sizes = splitter.sizes()
@@ -249,6 +253,10 @@ class MainWindow(QMainWindow):
         if eventType != "windows_generic_MSG":
             return super().nativeEvent(eventType, message)
         msg = MSG.from_address(message.__int__())
+
+        if msg.message == WM_NCLBUTTONDOWN:
+            if msg.wParam == HTCAPTION:
+                self.close_popups()
 
         # Title-Bar
         if msg.message == WM_NCCALCSIZE and msg.wParam:

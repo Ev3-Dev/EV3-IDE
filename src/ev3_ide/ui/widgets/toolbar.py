@@ -47,6 +47,12 @@ class IDETitleBar(QWidget):
         # Toolbar
         self.logo = QLabel("EV3")
 
+        self.menu_button = QPushButton()
+        self.menu_button.setObjectName("toolbar_menu_button")
+        self.menu_button.setFixedSize(30, 30)
+        self.menu_button.setIconSize(QSize(22, 22))
+        self.menu_button.setIcon(QIcon(resource_path("ui/icons/menu.svg")))
+
         self.run_button = QPushButton("Run")
         self.run_button.setObjectName("run_button")
         self.run_button.setFixedSize(90, 30)
@@ -117,6 +123,7 @@ class IDETitleBar(QWidget):
         windows_buttons_layout.addWidget(self.close_button)
 
         main_layout.addWidget(self.logo)
+        main_layout.addWidget(self.menu_button)
         main_layout.addLayout(toolbar_buttons_layout)
         main_layout.addStretch(stretch=75)
         main_layout.addLayout(ev3_right_layout)

@@ -1,9 +1,10 @@
 from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton
 from PySide6.QtGui import QFont, QIcon
-from PySide6.QtCore import Signal, Qt, QPropertyAnimation, QEasingCurve
+from PySide6.QtCore import Signal, Qt, QPropertyAnimation, QEasingCurve, QPoint
 
 from ev3_ide.core.resources import resource_path
 from ev3_ide.ui.widgets.new_file_dialog import NewMenu
+
 
 class SmoothScrollArea(QScrollArea):
     def __init__(self, parent=None):
@@ -50,12 +51,13 @@ class FilesWidget(QWidget):
         self.home_button.setObjectName("files_home_button")
         self.home_button.clicked.connect(self.home_requested)
 
-        self.dialog = NewMenu()
+        self.new_menu = NewMenu()
+
         self.new_button = QPushButton()
         self.new_button.setIcon(QIcon(resource_path("ui/icons/new.svg")))
         self.new_button.setFixedSize(30, 30)
         self.new_button.setObjectName("files_new_button")
-        self.new_button.clicked.connect(self.dialog.exec)
+        self.new_button.clicked.connect(self.show_new_menu)
 
         self.refresh_button = QPushButton()
         self.refresh_button.setIcon(QIcon(resource_path("ui/icons/refresh.svg")))
@@ -81,6 +83,10 @@ class FilesWidget(QWidget):
         self.scroll_area.setWidget(self.content)
 
         layout.addWidget(self.scroll_area)
+
+    def show_new_menu(self):
+        pos = self.new_button.mapToGlobal(QPoint(0, self.new_button.height()))
+        self.new_menu.popup(pos)
 
     def get_buttons_layout_widget(self):
         return [self.back_button, self.home_button, self.new_button, self.refresh_button]
