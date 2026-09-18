@@ -14,6 +14,8 @@ class SFTPWorker(QObject):
     file_loaded = Signal(dict)
     file_written = Signal(str)
     battery_updated = Signal(dict)
+    file_created = Signal(str)
+    directory_created = Signal(str)
 
     output_received = Signal(str)
     process_finished = Signal(int)
@@ -160,6 +162,36 @@ class SFTPWorker(QObject):
 
         # hier später SSH-Ausführung
 
+    def create_file(self, name):
+        path = posixpath.join(self.current_path, name)
+        if not self.is_connected():
+            return
+        if self._is_protected(path):
+            self.notification.emit({"type": "error", "title": "Cannot create file", "message": f"File '{posixpath.basename(path)}' is protected."})
+            return
+        try:
+            with self.sftp.open(path, "w"):
+                pass
+            self.file_created.emit(path)
+            self.list_dir(self.current_path)
+        except Exception as e:
+            self.notification.emit({"type": "error", "title": "Cannot create file", "message": f"Cannot create file '{posixpath.basename(path)}': {e}"})
+
+    def create_directory(self, name):
+        path = posixpath.join(self.current_path, name)
+        if not self.is_connected():
+            return
+        if self._is_protected(path):
+            self.notification.emit({"type": "error", "title": "Cannot create directory", "message": f"Directory '{posixpath.basename(path)}' is protected."})
+            return
+        try:
+            self.sftp.mkdir(path)
+            self.directory_created.emit(path)
+            self.list_dir(self.current_path)
+        except Exception as e:
+            self.notification.emit({"type": "error", "title": "Cannot create directory", "message": f"Cannot create directory '{posixpath.basename(path)}': {e}"})
+
+
 
 class EV3Handler(QObject):
     ev3_connected = Signal()
@@ -263,10 +295,14 @@ class EV3Handler(QObject):
         pass
 
     def create_file(self, name):
-        print("Creating file: " + name)
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.create_file, name)
 
     def create_directory(self, name):
-        print("Creating directory: " + name)
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.create_directory, name)
 
     def delete(self, path):
         pass
