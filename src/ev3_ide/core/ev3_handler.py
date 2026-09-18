@@ -262,8 +262,11 @@ class EV3Handler(QObject):
     def write_file(self, path, content):
         pass
 
-    def create_directory(self, path):
-        pass
+    def create_file(self, name):
+        print("Creating file: " + name)
+
+    def create_directory(self, name):
+        print("Creating directory: " + name)
 
     def delete(self, path):
         pass

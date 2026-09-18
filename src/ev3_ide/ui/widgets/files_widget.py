@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton
+from PySide6.QtWidgets import QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton, QLineEdit
 from PySide6.QtGui import QFont, QIcon
-from PySide6.QtCore import Signal, Qt, QPropertyAnimation, QEasingCurve, QPoint
+from PySide6.QtCore import Signal, Qt, QPropertyAnimation, QEasingCurve, QEvent
 
 from ev3_ide.core.resources import resource_path
 from ev3_ide.ui.widgets.new_file_dialog import NewMenu
@@ -32,11 +32,15 @@ class FilesWidget(QWidget):
     back_requested = Signal()
     home_requested = Signal()
     refresh_requested = Signal()
+    create_file_requested = Signal(str)
+    create_directory_requested = Signal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, overlay_parent=None):
         super().__init__(parent)
 
         self.setObjectName("files_widget")
+
+        self.is_ev3_connected = False
 
         # Obere Leiste
         self.back_button = QPushButton()
@@ -51,7 +55,12 @@ class FilesWidget(QWidget):
         self.home_button.setObjectName("files_home_button")
         self.home_button.clicked.connect(self.home_requested)
 
-        self.new_menu = NewMenu()
+        self.new_menu = NewMenu(overlay_parent)
+        self.new_menu.file_action.triggered.connect(self.start_create_file)
+        self.new_menu.directory_action.triggered.connect(self.start_create_directory)
+
+        self.input_type = ""
+        self.input_edit = None
 
         self.new_button = QPushButton()
         self.new_button.setIcon(QIcon(resource_path("ui/icons/new.svg")))
@@ -85,8 +94,58 @@ class FilesWidget(QWidget):
         layout.addWidget(self.scroll_area)
 
     def show_new_menu(self):
-        pos = self.new_button.mapToGlobal(QPoint(0, self.new_button.height()))
-        self.new_menu.popup(pos)
+        self.new_menu.show_at(self.new_button)
+
+    def ev3_connected(self):
+        self.is_ev3_connected = True
+
+    def ev3_disconnected(self):
+        self.is_ev3_connected = False
+
+    def finish_inline_input(self):
+        name = self.input_edit.text().strip()
+        if not name:
+            return
+        if not self.input_type:
+            self.input_edit.deleteLater()
+            self.input_edit = None
+            return
+        if self.input_type == "file":
+            self.create_file_requested.emit(name)
+        elif self.input_type == "directory":
+            self.create_directory_requested.emit(name)
+        self.input_edit.deleteLater()
+        self.input_edit = None
+
+    def cancel_inline_input(self):
+        if self.input_edit is None:
+            return
+        self.input_edit.deleteLater()
+        self.input_edit = None
+        self.input_type = ""
+
+    def start_inline_input(self, item_type, placeholder):
+        if not self.is_ev3_connected:
+            return
+        self.input_type = item_type
+        self.input_edit = QLineEdit()
+        self.input_edit.setPlaceholderText(placeholder)
+        self.input_edit.setObjectName("file_input")
+        self.input_edit.setFixedHeight(30)
+        self.input_edit.setFont(QFont("Segoe UI", 10))
+        self.input_edit.installEventFilter(self)
+        self.input_edit.returnPressed.connect(self.finish_inline_input)
+        self.file_layout.insertWidget(0, self.input_edit)
+        self.input_edit.show()
+        self.input_edit.setFocus()
+
+    def start_create_file(self):
+        self.new_menu.hide()
+        self.start_inline_input(item_type="file", placeholder="Filename")
+
+    def start_create_directory(self):
+        self.new_menu.hide()
+        self.start_inline_input(item_type="directory", placeholder="Directory name")
 
     def get_buttons_layout_widget(self):
         return [self.back_button, self.home_button, self.new_button, self.refresh_button]
@@ -110,6 +169,13 @@ class FilesWidget(QWidget):
             self.file_layout.addWidget(file_item)
 
         self.file_layout.addStretch()
+
+    def eventFilter(self, obj, event):
+        if obj is self.input_edit:
+            if (event.type() == QEvent.Type.FocusOut) or (event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape):
+                self.cancel_inline_input()
+                return False
+        return super().eventFilter(obj, event)
 
 
 class FileItem(QFrame):

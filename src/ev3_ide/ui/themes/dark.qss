@@ -285,19 +285,24 @@ QPushButton#files_back_button:hover, QPushButton#files_home_button:hover, QPushB
     background-color: #2e2f30;
 }
 
-QMenu#new_menu {
-    background-color: #424249;
+QLineEdit#file_input {
+    background-color: #25272a;
+    border: 1px solid #3c444a;
+    border-radius: 4px;
     color: #d4d4d4;
-    border: 0px;
+    padding: 2px 5px 2px 5px;
 }
 
-QMenu#new_menu::item {
-    font-size: 13px;
-    padding: 6px 10px 6px 6px;
+QLineEdit#file_input:focus {
+    border: 1px solid #5a6570;
 }
 
-QMenu#new_menu::item:selected {
-    background-color: #545457;
+QLineEdit#file_input:hover {
+    border: 1px solid #4a5259;
+}
+
+QLineEdit#file_input::placeholder {
+    color: #777b80;
 }
 
 /* Content-Area */

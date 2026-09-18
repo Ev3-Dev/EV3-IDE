@@ -133,8 +133,8 @@ class MainWindow(QMainWindow):
 
         self.notification_manager = NotificationManager(self)
 
-        self.ev3_handler.ev3_connected.connect(lambda: self.title_bar.set_connection_state("• Connected"))
-        self.ev3_handler.ev3_disconnected.connect(lambda: self.title_bar.set_connection_state("• Disconnected"))
+        self.ev3_handler.ev3_connected.connect(self.handle_ev3_connected)
+        self.ev3_handler.ev3_disconnected.connect(self.handle_ev3_disconnected)
         self.ev3_handler.directory_updated.connect(self.left_sidebar.update_directory)
         self.ev3_handler.file_loaded.connect(self.open_editor_tab)
         self.ev3_handler.file_written.connect(self.editor_tabs.handle_file_written)
@@ -149,6 +149,8 @@ class MainWindow(QMainWindow):
         self.left_sidebar.back_requested.connect(self.handle_files_widget_back)
         self.left_sidebar.home_requested.connect(self.handle_files_home)
         self.left_sidebar.refresh_requested.connect(self.handle_files_refresh)
+        self.left_sidebar.create_file_requested.connect(self.ev3_handler.create_file)
+        self.left_sidebar.create_directory_requested.connect(self.ev3_handler.create_directory)
 
         # Shortcuts
         self.title_bar.run_requested.connect(self.run_current_file)
@@ -209,8 +211,17 @@ class MainWindow(QMainWindow):
         tab = self.editor_tabs.current_tab()
         self.title_bar.update_toolbar(tab)
 
+    def handle_ev3_connected(self):
+        self.title_bar.set_connection_state("• Connected")
+        self.left_sidebar.files_widget.ev3_connected()
+
+    def handle_ev3_disconnected(self):
+        self.title_bar.set_connection_state("• Disconnected")
+        self.left_sidebar.files_widget.ev3_disconnected()
+
     def close_popups(self):
         self.left_sidebar.dropdown.popup.hide()
+        self.left_sidebar.files_widget.new_menu.hide()
 
     # MainWindow-Funktionen
     def update_splitter_handle(self, splitter):
