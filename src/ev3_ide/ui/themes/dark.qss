@@ -277,6 +277,10 @@ QPushButton#combo_item:hover {
     background-color: #444649;
 }
 
+QFrame#context_separator {
+    background-color: #404040;
+}
+
 QPushButton#files_back_button, QPushButton#files_home_button, QPushButton#files_new_button, QPushButton#files_refresh_button {
     background-color: transparent;
 }

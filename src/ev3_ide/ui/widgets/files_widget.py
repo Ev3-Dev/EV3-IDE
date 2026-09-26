@@ -4,6 +4,7 @@ from PySide6.QtCore import Signal, Qt, QPropertyAnimation, QEasingCurve, QEvent
 
 from ev3_ide.core.resources import resource_path
 from ev3_ide.ui.widgets.new_file_dialog import NewMenu
+from ev3_ide.ui.widgets.right_click_menu import RightClickMenu
 
 
 class SmoothScrollArea(QScrollArea):
@@ -41,6 +42,9 @@ class FilesWidget(QWidget):
         self.setObjectName("files_widget")
 
         self.is_ev3_connected = False
+
+        self.right_click_menu = RightClickMenu(overlay_parent)
+        self.right_click_menu.open_button.clicked.connect(self.open_from_menu)
 
         # Obere Leiste
         self.back_button = QPushButton()
@@ -93,8 +97,17 @@ class FilesWidget(QWidget):
 
         layout.addWidget(self.scroll_area)
 
+    def open_from_menu(self):
+        data = self.right_click_menu.data
+        self.right_click_menu.hide()
+        self.item_clicked.emit(data)
+
     def show_new_menu(self):
         self.new_menu.show_at(self.new_button)
+
+    def show_right_click_menu(self, pos, data):
+        self.right_click_menu.set_items(data)
+        self.right_click_menu.show_at(pos)
 
     def ev3_connected(self):
         self.is_ev3_connected = True
@@ -165,7 +178,7 @@ class FilesWidget(QWidget):
         for entry in entries:
             file_item = FileItem(entry)
             file_item.clicked.connect(self.item_clicked)
-            file_item.right_clicked.connect(self.item_right_clicked)
+            file_item.right_clicked.connect(lambda data, pos: self.show_right_click_menu(pos, data))
             self.file_layout.addWidget(file_item)
 
         self.file_layout.addStretch()
@@ -180,7 +193,7 @@ class FilesWidget(QWidget):
 
 class FileItem(QFrame):
     clicked = Signal(dict)
-    right_clicked = Signal(dict)
+    right_clicked = Signal(dict, object)
 
     def __init__(self, data, parent=None):
         super().__init__(parent)
@@ -210,5 +223,5 @@ class FileItem(QFrame):
         if event.button() == Qt.MouseButton.LeftButton:
             self.clicked.emit(self.data)
         elif event.button() == Qt.MouseButton.RightButton:
-            self.right_clicked.emit(self.data)
+            self.right_clicked.emit(self.data, event.globalPosition().toPoint())
         super().mousePressEvent(event)
