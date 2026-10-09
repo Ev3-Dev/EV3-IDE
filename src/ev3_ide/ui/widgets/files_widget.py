@@ -44,10 +44,12 @@ class FilesWidget(QWidget):
         self.setObjectName("files_widget")
 
         self.is_ev3_connected = False
+        self.selected_item = None
 
         self.right_click_menu = RightClickMenu(overlay_parent)
         self.right_click_menu.open_button.clicked.connect(self.open_from_menu)
         self.right_click_menu.delete_button.clicked.connect(self.delete_from_menu)
+        self.right_click_menu.closed.connect(self.clear_selected_item)
 
         # Obere Leiste
         self.back_button = QPushButton()
@@ -102,12 +104,12 @@ class FilesWidget(QWidget):
 
     def open_from_menu(self):
         data = self.right_click_menu.data
-        self.right_click_menu.hide()
+        self.right_click_menu.close_menu()
         self.item_clicked.emit(data)
 
     def delete_from_menu(self):
         data = self.right_click_menu.data
-        self.right_click_menu.hide()
+        self.right_click_menu.close_menu()
         if data["type"] == "file":
             self.delete_file_requested.emit(data["path"])
         elif data["type"] == "directory":
@@ -116,7 +118,25 @@ class FilesWidget(QWidget):
     def show_new_menu(self):
         self.new_menu.show_at(self.new_button)
 
+    def clear_selected_item(self):
+        if self.selected_item is not None:
+            self.selected_item.set_selected(False)
+            self.selected_item = None
+
     def show_right_click_menu(self, pos, data):
+        # Vorherige Markierung entfernen
+        if self.selected_item is not None:
+            self.selected_item.set_selected(False)
+        # Angeklicktes Element finden
+        for index in range(self.file_layout.count()):
+            widget = self.file_layout.itemAt(index).widget()
+            if isinstance(widget, FileItem) and widget.data["path"] == data["path"]:
+                self.selected_item = widget
+                break
+        # Neue Markierung setzen
+        if self.selected_item is not None:
+            self.selected_item.set_selected(True)
+
         self.right_click_menu.set_items(data)
         self.right_click_menu.show_at(pos)
 
@@ -179,6 +199,10 @@ class FilesWidget(QWidget):
         self.refresh_requested.emit()
 
     def update_directory(self, entries):
+        if self.selected_item is not None:
+            self.selected_item = None
+        self.right_click_menu.close_menu()
+
         # Alte Einträge entfernen
         while self.file_layout.count():
             item = self.file_layout.takeAt(0)
@@ -229,6 +253,12 @@ class FileItem(QFrame):
         layout.addWidget(self.icon)
         layout.addWidget(self.name_label)
         layout.addStretch()
+
+    def set_selected(self, selected):
+        self.setProperty("selected", selected)
+        self.style().unpolish(self)
+        self.style().polish(self)
+        self.update()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:

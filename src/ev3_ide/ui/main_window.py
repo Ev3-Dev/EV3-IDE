@@ -243,6 +243,7 @@ class MainWindow(QMainWindow):
     def close_popups(self):
         self.left_sidebar.dropdown.popup.hide()
         self.left_sidebar.files_widget.new_menu.hide()
+        self.left_sidebar.files_widget.right_click_menu.close_menu()
 
     # MainWindow-Funktionen
     def update_splitter_handle(self, splitter):

@@ -338,6 +338,9 @@ QFrame#file_item:hover {
     background: #086481;
 }
 
+QFrame#file_item[selected="true"] {
+    background-color: #525561;
+}
 
 QLabel#file_item_name {
     color: #d4d4d4;

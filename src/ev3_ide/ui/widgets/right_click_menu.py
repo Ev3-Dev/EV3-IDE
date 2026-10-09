@@ -1,9 +1,10 @@
-from PySide6.QtCore import Qt, QEvent
-from PySide6.QtGui import QAction
+from PySide6.QtCore import Qt, QEvent, Signal
 from PySide6.QtWidgets import QApplication, QFrame, QVBoxLayout, QPushButton, QSpacerItem
 
 
 class RightClickMenu(QFrame):
+    closed = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -110,24 +111,23 @@ class RightClickMenu(QFrame):
         self.raise_()
         self.show()
 
-    def keyPressEvent(self, event):
-        print("Event triggered")
-        if event.key() == Qt.Key.Key_Escape:
-            print("Escape pressed")
-            self.hide()
-            event.accept()
-        else:
-            super().keyPressEvent(event)
+    def close_menu(self):
+        self.hide()
+        self.closed.emit()
 
     def eventFilter(self, obj, event):
         if not self.isVisible():
             return super().eventFilter(obj, event)
+        if event.type() == QEvent.Type.KeyPress:
+            if event.key() == Qt.Key.Key_Escape:
+                self.close_menu()
+                return True
         if event.type() == QEvent.Type.MouseButtonPress:
             global_click_pos = event.globalPosition().toPoint()
             popup_rect = self.rect()
             popup_top_left = self.mapToGlobal(popup_rect.topLeft())
             popup_rect_global = popup_rect.translated(popup_top_left)
             if not popup_rect_global.contains(global_click_pos):
-                self.hide()
+                self.close_menu()
                 return False
         return super().eventFilter(obj, event)
