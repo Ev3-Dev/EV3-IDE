@@ -16,6 +16,8 @@ class SFTPWorker(QObject):
     battery_updated = Signal(dict)
     file_created = Signal(str)
     directory_created = Signal(str)
+    file_deleted = Signal(str)
+    directory_deleted = Signal(str)
 
     output_received = Signal(str)
     process_finished = Signal(int)
@@ -191,6 +193,34 @@ class SFTPWorker(QObject):
         except Exception as e:
             self.notification.emit({"type": "error", "title": "Cannot create directory", "message": f"Cannot create directory '{posixpath.basename(path)}': {e}"})
 
+    def delete_file(self, path):
+        if not self.is_connected():
+            return
+        if self._is_protected(path):
+            self.notification.emit({"type": "error", "title": "Cannot delete file", "message": f"File '{posixpath.basename(path)}' is protected."})
+            return
+        try:
+            self.sftp.remove(path)
+            self.file_deleted.emit(path)
+            self.list_dir(self.current_path)
+        except Exception as e:
+            self.notification.emit({"type": "error", "title": "Cannot delete file", "message": f"Cannot delete file '{posixpath.basename(path)}': {e}"})
+
+    def delete_directory(self, path):
+        if not self.is_connected():
+            return
+        if self._is_protected(path):
+            self.notification.emit({"type": "error", "title": "Cannot delete directory", "message": f"Directory '{posixpath.basename(path)}' is protected."})
+            return
+        if path == "/":
+            self.notification.emit({"type": "error", "title": "Cannot delete directory", "message": "The root directory cannot be deleted."})
+            return
+        try:
+            self.sftp.rmdir(path)
+            self.directory_deleted.emit(path)
+            self.list_dir(self.current_path)
+        except Exception as e:
+            self.notification.emit({"type": "error", "title": "Cannot delete directory", "message": f"Cannot delete directory '{posixpath.basename(path)}'. Make sure the directory is empty and you have permission to delete it.\nDetails: {e}"})
 
 
 class EV3Handler(QObject):
@@ -201,6 +231,8 @@ class EV3Handler(QObject):
     file_loaded = Signal(dict)
     file_written = Signal(str)
     battery_updated = Signal(dict)
+    file_deleted = Signal(str)
+    directory_deleted = Signal(str)
 
     output_received = Signal(str)
     process_finished = Signal(int)
@@ -259,6 +291,8 @@ class EV3Handler(QObject):
         self._worker.output_received.connect(self.output_received)
         self._worker.process_finished.connect(self.process_finished)
         self._worker.notification.connect(self.notification)
+        self._worker.file_deleted.connect(self.file_deleted)
+        self._worker.directory_deleted.connect(self.directory_deleted)
 
         self._worker_thread = threading.Thread(target=self._worker.run, daemon=True)
 
@@ -304,8 +338,15 @@ class EV3Handler(QObject):
             return
         self._worker.enqueue(self._worker.create_directory, name)
 
-    def delete(self, path):
-        pass
+    def delete_file(self, path):
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.delete_file, path)
+
+    def delete_directory(self, path):
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.delete_directory, path)
 
     def rename(self, old_path, new_path):
         pass

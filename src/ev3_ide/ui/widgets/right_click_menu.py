@@ -9,15 +9,6 @@ class RightClickMenu(QFrame):
 
         self.data = dict()
 
-        # Aktionen
-        self.open_action = QAction("open", self)
-        self.run_action = QAction("run", self)
-        self.compile_action = QAction("compile", self)
-        self.rename_action = QAction("rename", self)
-        self.move_action = QAction("move", self)
-        self.delete_action = QAction("delete", self)
-        self.properties_action = QAction("properties", self)
-
         # Separator
         self.separator_container_1 = QFrame()
         self.separator_container_1.setFixedHeight(5)
@@ -43,43 +34,36 @@ class RightClickMenu(QFrame):
         self.open_button = QPushButton("  Open")
         self.open_button.setObjectName("combo_item")
         self.open_button.setFixedHeight(26)
-        self.open_button.clicked.connect(self.open_action.trigger)
 
         # Run
         self.run_button = QPushButton("  Run")
         self.run_button.setObjectName("combo_item")
         self.run_button.setFixedHeight(26)
-        self.run_button.clicked.connect(self.run_action.trigger)
 
         # Compile
         self.compile_button = QPushButton("  Compile")
         self.compile_button.setObjectName("combo_item")
         self.compile_button.setFixedHeight(26)
-        self.compile_button.clicked.connect(self.compile_action.trigger)
 
         # Rename
         self.rename_button = QPushButton("  Rename")
         self.rename_button.setObjectName("combo_item")
         self.rename_button.setFixedHeight(26)
-        self.rename_button.clicked.connect(self.rename_action.trigger)
 
         # Move
         self.move_button = QPushButton("  Move")
         self.move_button.setObjectName("combo_item")
         self.move_button.setFixedHeight(26)
-        self.move_button.clicked.connect(self.move_action.trigger)
 
         # Delete
         self.delete_button = QPushButton("  Delete")
         self.delete_button.setObjectName("combo_item")
         self.delete_button.setFixedHeight(26)
-        self.delete_button.clicked.connect(self.delete_action.trigger)
 
         # Properties
         self.properties_button = QPushButton("  Properties")
         self.properties_button.setObjectName("combo_item")
         self.properties_button.setFixedHeight(26)
-        self.properties_button.clicked.connect(self.properties_action.trigger)
 
         # Popup
         self.setObjectName("combo_popup")

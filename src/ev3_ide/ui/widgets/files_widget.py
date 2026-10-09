@@ -35,6 +35,8 @@ class FilesWidget(QWidget):
     refresh_requested = Signal()
     create_file_requested = Signal(str)
     create_directory_requested = Signal(str)
+    delete_file_requested = Signal(str)
+    delete_directory_requested = Signal(str)
 
     def __init__(self, parent=None, overlay_parent=None):
         super().__init__(parent)
@@ -45,6 +47,7 @@ class FilesWidget(QWidget):
 
         self.right_click_menu = RightClickMenu(overlay_parent)
         self.right_click_menu.open_button.clicked.connect(self.open_from_menu)
+        self.right_click_menu.delete_button.clicked.connect(self.delete_from_menu)
 
         # Obere Leiste
         self.back_button = QPushButton()
@@ -101,6 +104,14 @@ class FilesWidget(QWidget):
         data = self.right_click_menu.data
         self.right_click_menu.hide()
         self.item_clicked.emit(data)
+
+    def delete_from_menu(self):
+        data = self.right_click_menu.data
+        self.right_click_menu.hide()
+        if data["type"] == "file":
+            self.delete_file_requested.emit(data["path"])
+        elif data["type"] == "directory":
+            self.delete_directory_requested.emit(data["path"])
 
     def show_new_menu(self):
         self.new_menu.show_at(self.new_button)

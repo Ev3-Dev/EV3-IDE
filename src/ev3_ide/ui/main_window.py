@@ -140,6 +140,8 @@ class MainWindow(QMainWindow):
         self.ev3_handler.file_written.connect(self.editor_tabs.handle_file_written)
         self.ev3_handler.battery_updated.connect(self.title_bar.set_battery_state)
         self.ev3_handler.notification.connect(self.handle_notification)
+        self.ev3_handler.file_deleted.connect(self.handle_file_deleted)
+        self.ev3_handler.directory_deleted.connect(self.handle_directory_deleted)
 
         self.editor_tabs.save_requested.connect(self.ev3_handler.save_file)
         self.editor_tabs.currentChanged.connect(self.update_toolbar)
@@ -151,6 +153,8 @@ class MainWindow(QMainWindow):
         self.left_sidebar.refresh_requested.connect(self.handle_files_refresh)
         self.left_sidebar.create_file_requested.connect(self.ev3_handler.create_file)
         self.left_sidebar.create_directory_requested.connect(self.ev3_handler.create_directory)
+        self.left_sidebar.delete_file_requested.connect(self.handle_delete_file)
+        self.left_sidebar.delete_directory_requested.connect(self.handle_delete_directory)
 
         # Shortcuts
         self.title_bar.run_requested.connect(self.run_current_file)
@@ -203,6 +207,23 @@ class MainWindow(QMainWindow):
 
     def handle_files_refresh(self):
         self.ev3_handler.refresh()
+
+    def handle_delete_file(self, path):
+        self.ev3_handler.delete_file(path)
+
+    def handle_delete_directory(self, path):
+        self.ev3_handler.delete_directory(path)
+
+    def handle_file_deleted(self, path):
+        opened_paths = self.editor_tabs.get_opened_paths()
+        for p in opened_paths:
+            if p == path:
+                i, tab = self.editor_tabs.find_tab(path)
+                self.editor_tabs._close_tab(i)
+                return
+
+    def handle_directory_deleted(self, path):
+        pass
 
     def handle_notification(self, data):
         self.notification_manager.show(notification_type=data["type"], title=data["title"], message=data["message"])
