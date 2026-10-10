@@ -222,6 +222,9 @@ class SFTPWorker(QObject):
         except Exception as e:
             self.notification.emit({"type": "error", "title": "Cannot delete directory", "message": f"Cannot delete directory '{posixpath.basename(path)}'. Make sure the directory is empty and you have permission to delete it.\nDetails: {e}"})
 
+    def rename(self, old_path, new_path):
+        print(f"Renaming:\nOld path: {old_path}\nNew path: {new_path}")
+
 
 class EV3Handler(QObject):
     ev3_connected = Signal()
@@ -349,7 +352,9 @@ class EV3Handler(QObject):
         self._worker.enqueue(self._worker.delete_directory, path)
 
     def rename(self, old_path, new_path):
-        pass
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.rename, old_path, new_path)
 
     def run_file(self, path, run_mode):
         if self._worker is None:

@@ -155,6 +155,7 @@ class MainWindow(QMainWindow):
         self.left_sidebar.create_directory_requested.connect(self.ev3_handler.create_directory)
         self.left_sidebar.delete_file_requested.connect(self.handle_delete_file)
         self.left_sidebar.delete_directory_requested.connect(self.handle_delete_directory)
+        self.left_sidebar.rename_requested.connect(self.handle_rename)
 
         # Shortcuts
         self.title_bar.run_requested.connect(self.run_current_file)
@@ -214,6 +215,9 @@ class MainWindow(QMainWindow):
     def handle_delete_directory(self, path):
         self.ev3_handler.delete_directory(path)
 
+    def handle_rename(self, old_path, new_path):
+        self.ev3_handler.rename(old_path, new_path)
+
     def handle_file_deleted(self, path):
         opened_paths = self.editor_tabs.get_opened_paths()
         for p in opened_paths:
@@ -246,6 +250,7 @@ class MainWindow(QMainWindow):
         self.left_sidebar.dropdown.popup.hide()
         self.left_sidebar.files_widget.new_menu.hide()
         self.left_sidebar.files_widget.right_click_menu.close_menu()
+        self.left_sidebar.files_widget.cancel_inline_input()
 
     # MainWindow-Funktionen
     def update_splitter_handle(self, splitter):

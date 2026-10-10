@@ -389,7 +389,7 @@ QPushButton#notification_close_button {
 }
 
 QPushButton#notification_close_button:hover {
-    background-color: #5c5c61;
+    background-color: #45474d;
 }
 
 QLabel#notification_message {
