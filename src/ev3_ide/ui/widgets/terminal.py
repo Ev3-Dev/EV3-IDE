@@ -19,6 +19,7 @@ class Terminal(QPlainTextEdit):
 
         self._prompt = "robot@ev3dev:~$ "
         self.appendPlainText(self._prompt)
+        self.setReadOnly(True)
 
         # Smoothes Scrollen
         self.friction = 0.80
@@ -43,7 +44,7 @@ class Terminal(QPlainTextEdit):
         return QFont(cls._font_family, size)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_Return:
+        if event.key() == Qt.Key.Key_Return and not self.isReadOnly():
             text  = self.toPlainText()
             cmd   = text.split(self._prompt)[-1].strip()
             if cmd:

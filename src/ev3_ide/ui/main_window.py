@@ -235,10 +235,12 @@ class MainWindow(QMainWindow):
     def handle_ev3_connected(self):
         self.title_bar.set_connection_state("• Connected")
         self.left_sidebar.files_widget.ev3_connected()
+        self.bottom_tabs.terminal.setReadOnly(False)
 
     def handle_ev3_disconnected(self):
         self.title_bar.set_connection_state("• Disconnected")
         self.left_sidebar.files_widget.ev3_disconnected()
+        self.bottom_tabs.terminal.setReadOnly(True)
 
     def close_popups(self):
         self.left_sidebar.dropdown.popup.hide()
