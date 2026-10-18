@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton, QLineEdit
+from PySide6.QtWidgets import QApplication, QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton, QLineEdit, QSizePolicy
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtCore import Signal, Qt, QPropertyAnimation, QEasingCurve, QEvent
 import posixpath
@@ -74,6 +74,8 @@ class FilesWidget(QWidget):
         self.input_type = ""
         self.input_edit = None
 
+        self.renaming_item = None
+
         self.new_button = QPushButton()
         self.new_button.setIcon(QIcon(resource_path("ui/icons/new.svg")))
         self.new_button.setFixedSize(30, 30)
@@ -125,6 +127,7 @@ class FilesWidget(QWidget):
             return
         item = self.selected_item
         self.right_click_menu.close_menu()
+        self.renaming_item = item
         item.start_rename()
 
     def show_new_menu(self):
@@ -194,6 +197,11 @@ class FilesWidget(QWidget):
         self.input_edit.show()
         self.input_edit.setFocus()
 
+    def cancel_rename_edit(self):
+        item = self.renaming_item
+        if item is not None and item.rename_edit is not None:
+            item.cancel_rename()
+
     def start_create_file(self):
         self.new_menu.hide()
         self.start_inline_input(item_type="file", placeholder="Filename")
@@ -231,6 +239,18 @@ class FilesWidget(QWidget):
         self.file_layout.addStretch()
 
     def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.MouseButtonPress:
+            item = self.renaming_item
+            if item is not None and item.rename_edit is not None:
+                edit_widget = item.rename_edit
+                click_pos = event.globalPosition().toPoint()
+                edit_pos = edit_widget.mapToGlobal(edit_widget.rect().topLeft())
+                edit_rect = edit_widget.rect()
+                edit_rect.moveTopLeft(edit_pos)
+                if not edit_rect.contains(click_pos):
+                    item.cancel_rename()
+                    self.renaming_item = None
+                    return True
         if self.input_edit is not None:
             if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
                     self.cancel_inline_input()
@@ -262,6 +282,8 @@ class FileItem(QFrame):
         self.data = data
         self.rename_edit = None
 
+        self.unclickable = False
+
         layout = QHBoxLayout(self)
         layout.setContentsMargins(6, 4, 6, 4)
 
@@ -281,20 +303,27 @@ class FileItem(QFrame):
     def start_rename(self):
         if self.rename_edit is not None:
             return
+        self.unclickable = True
+        self.name_label.hide()
         self.rename_edit = QLineEdit(self.data["name"])
         self.rename_edit.setObjectName("file_input")
-        self.rename_edit.setFixedHeight(25)
+        self.rename_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.rename_edit.setFixedHeight(28)
         self.rename_edit.setFont(self.name_label.font())
         self.rename_edit.setPlaceholderText(self.data["name"])
         layout = self.layout()
+        layout.setContentsMargins(6, 0, 6, 0)
         layout.insertWidget(1, self.rename_edit)
-        self.name_label.hide()
+        index = layout.indexOf(self.rename_edit)
+        if index != -1:
+            layout.setStretch(index, 1)
         self.rename_edit.installEventFilter(self)
         self.rename_edit.returnPressed.connect(self.finish_rename)
         self.rename_edit.selectAll()
         self.rename_edit.setFocus()
 
     def finish_rename(self):
+        self.unclickable = False
         if self.rename_edit is None:
             return
         new_name = self.rename_edit.text().strip()
@@ -304,10 +333,12 @@ class FileItem(QFrame):
             return
         old_path = self.data["path"]
         new_path = posixpath.join(posixpath.dirname(old_path), new_name)
-        self.rename_requested.emit(old_path, new_path)
         self.cancel_rename()
+        self.rename_requested.emit(old_path, new_path)
 
     def cancel_rename(self):
+        self.layout().setContentsMargins(6, 4, 6, 4)
+        self.unclickable = False
         if self.rename_edit is None:
             return
         self.layout().removeWidget(self.rename_edit)
@@ -321,7 +352,16 @@ class FileItem(QFrame):
         self.style().polish(self)
         self.update()
 
+    def set_rename_blocked(self, blocked):
+        self.setProperty("rename_blocked", blocked)
+        self.style().unpolish(self)
+        self.style().polish(self)
+        self.update()
+
     def mousePressEvent(self, event):
+        if self.unclickable:
+            event.accept()
+            return
         if event.button() == Qt.MouseButton.LeftButton:
             self.clicked.emit(self.data)
         elif event.button() == Qt.MouseButton.RightButton:
@@ -334,4 +374,6 @@ class FileItem(QFrame):
                 if event.key() == Qt.Key.Key_Escape:
                     self.cancel_rename()
                     return True
+            if event.type() == QEvent.Type.FocusOut:
+                self.cancel_rename()
         return super().eventFilter(obj, event)

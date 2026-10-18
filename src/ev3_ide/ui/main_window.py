@@ -251,6 +251,7 @@ class MainWindow(QMainWindow):
         self.left_sidebar.files_widget.new_menu.hide()
         self.left_sidebar.files_widget.right_click_menu.close_menu()
         self.left_sidebar.files_widget.cancel_inline_input()
+        self.left_sidebar.files_widget.cancel_rename_edit()
 
     # MainWindow-Funktionen
     def update_splitter_handle(self, splitter):
