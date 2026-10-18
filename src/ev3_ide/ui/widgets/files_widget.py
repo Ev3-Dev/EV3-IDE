@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton, QLineEdit, QSizePolicy, QTabBar
+from PySide6.QtWidgets import QApplication, QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton, QLineEdit, QSizePolicy, QTabBar, QPlainTextEdit, QSplitterHandle
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtCore import Signal, Qt, QPropertyAnimation, QEasingCurve, QEvent
 import posixpath
@@ -251,9 +251,12 @@ class FilesWidget(QWidget):
                     item.cancel_rename()
                     self.renaming_item = None
                     widget = QApplication.widgetAt(click_pos)
-                    if widget is not None:
-                        if isinstance(widget, QPushButton) or isinstance(widget, QTabBar):
+                    if isinstance(widget, (QPushButton, QTabBar, QPlainTextEdit, QSplitterHandle)):
+                        return False
+                    while widget is not None:
+                        if isinstance(widget, QPlainTextEdit):
                             return False
+                        widget = widget.parentWidget()
                     return True
         if self.input_edit is not None:
             if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
@@ -268,9 +271,12 @@ class FilesWidget(QWidget):
                     if not input_rect.contains(click_pos):
                         self.cancel_inline_input()
                         widget = QApplication.widgetAt(click_pos)
-                        if widget is not None:
-                            if isinstance(widget, QPushButton) or isinstance(widget, QTabBar):
+                        if isinstance(widget, (QPushButton, QTabBar, QPlainTextEdit, QSplitterHandle)):
+                            return False
+                        while widget is not None:
+                            if isinstance(widget, QPlainTextEdit):
                                 return False
+                            widget = widget.parentWidget()
                         return True
             if obj is self.input_edit and event.type() == QEvent.Type.FocusOut:
                 self.cancel_inline_input()

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QVBoxLayout, QComboBox, QFrame, QPushButton, QTabBar
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QComboBox, QFrame, QPushButton, QTabBar, QPlainTextEdit, QSplitterHandle
 from PySide6.QtCore import Qt, QEvent
 
 
@@ -62,8 +62,11 @@ class IDEComboBox(QComboBox):
             if not popup_rect_global.contains(global_click_pos):
                 self.popup.hide()
                 widget = QApplication.widgetAt(global_click_pos)
-                if widget is not None:
-                    if isinstance(widget, QPushButton) or isinstance(widget, QTabBar):
+                if isinstance(widget, (QPushButton, QTabBar, QPlainTextEdit, QSplitterHandle)):
+                    return False
+                while widget is not None:
+                    if isinstance(widget, QPlainTextEdit):
                         return False
+                    widget = widget.parentWidget()
                 return True
         return super().eventFilter(obj, event)
