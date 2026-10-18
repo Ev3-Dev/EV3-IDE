@@ -253,8 +253,8 @@ class FilesWidget(QWidget):
                     return True
         if self.input_edit is not None:
             if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
-                    self.cancel_inline_input()
-                    return True
+                self.cancel_inline_input()
+                return True
             if event.type() == QEvent.Type.MouseButtonPress:
                 if obj is not self.input_edit:
                     click_pos = event.globalPosition().toPoint()
@@ -263,8 +263,10 @@ class FilesWidget(QWidget):
                     input_rect.translate(input_pos)
                     if not input_rect.contains(click_pos):
                         self.cancel_inline_input()
+                        return True
             if obj is self.input_edit and event.type() == QEvent.Type.FocusOut:
                 self.cancel_inline_input()
+                return True
         return super().eventFilter(obj, event)
 
 
@@ -300,10 +302,13 @@ class FileItem(QFrame):
         layout.addWidget(self.name_label)
         layout.addStretch()
 
+        self.setProperty("rename_blocked", False)
+
     def start_rename(self):
         if self.rename_edit is not None:
             return
         self.unclickable = True
+        self.set_rename_blocked(True)
         self.name_label.hide()
         self.rename_edit = QLineEdit(self.data["name"])
         self.rename_edit.setObjectName("file_input")
@@ -324,6 +329,7 @@ class FileItem(QFrame):
 
     def finish_rename(self):
         self.unclickable = False
+        self.set_rename_blocked(False)
         if self.rename_edit is None:
             return
         new_name = self.rename_edit.text().strip()
@@ -339,6 +345,7 @@ class FileItem(QFrame):
     def cancel_rename(self):
         self.layout().setContentsMargins(6, 4, 6, 4)
         self.unclickable = False
+        self.set_rename_blocked(False)
         if self.rename_edit is None:
             return
         self.layout().removeWidget(self.rename_edit)

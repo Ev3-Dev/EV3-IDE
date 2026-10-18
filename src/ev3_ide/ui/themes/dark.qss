@@ -338,11 +338,9 @@ QFrame#file_item:hover[rename_blocked="false"] {
     background: #086481;
 }
 
-/*
 QFrame#file_item:hover[rename_blocked="true"] {
-    background-color: #e5e5e8;
+    background-color: #191a1c;
 }
-*/
 
 QFrame#file_item[selected="true"] {
     background-color: #525561;
