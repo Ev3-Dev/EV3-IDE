@@ -216,8 +216,8 @@ class MainWindow(QMainWindow):
     def handle_delete_directory(self, path):
         self.ev3_handler.delete_directory(path)
 
-    def handle_rename(self, old_path, new_path):
-        self.ev3_handler.rename(old_path, new_path)
+    def handle_rename(self, old_path, new_path, old_name, new_name):
+        self.ev3_handler.rename(old_path, new_path, old_name, new_name)
 
     def handle_file_deleted(self, path):
         opened_paths = self.editor_tabs.get_opened_paths()

@@ -16,7 +16,7 @@ class LeftSidebar(QFrame):
     create_directory_requested = Signal(str)
     delete_file_requested = Signal(str)
     delete_directory_requested = Signal(str)
-    rename_requested = Signal(str, str)
+    rename_requested = Signal(str, str, str, str)
 
     def __init__(self):
         super().__init__()

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton, QLineEdit, QSizePolicy, QTabBar, QPlainTextEdit, QSplitterHandle
+from PySide6.QtWidgets import QApplication, QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton, QLineEdit, QSizePolicy, QTabBar, QPlainTextEdit, QSplitterHandle, QMessageBox
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtCore import Signal, Qt, QPropertyAnimation, QEasingCurve, QEvent
 import posixpath
@@ -38,7 +38,7 @@ class FilesWidget(QWidget):
     create_directory_requested = Signal(str)
     delete_file_requested = Signal(str)
     delete_directory_requested = Signal(str)
-    rename_requested = Signal(str, str)
+    rename_requested = Signal(str, str, str, str)
 
     def __init__(self, parent=None, overlay_parent=None):
         super().__init__(parent)
@@ -114,13 +114,20 @@ class FilesWidget(QWidget):
         self.right_click_menu.close_menu()
         self.item_clicked.emit(data)
 
+    def confirm_delete(self, name, is_file):
+        item_type = "file" if is_file else "directory"
+        result = QMessageBox.question(self,"Confirm Deletion",f"Do you really want to delete the {item_type}\n'{name}'{" and all of its contents" if item_type == "directory" else ""}?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
+        return result == QMessageBox.StandardButton.Yes
+
     def delete_from_menu(self):
         data = self.right_click_menu.data
         self.right_click_menu.close_menu()
         if data["type"] == "file":
-            self.delete_file_requested.emit(data["path"])
+            if self.confirm_delete(data["name"], True):
+                self.delete_file_requested.emit(data["path"])
         elif data["type"] == "directory":
-            self.delete_directory_requested.emit(data["path"])
+            if self.confirm_delete(data["name"], False):
+                self.delete_directory_requested.emit(data["path"])
 
     def rename_from_menu(self):
         if self.selected_item is None:
@@ -287,7 +294,7 @@ class FilesWidget(QWidget):
 class FileItem(QFrame):
     clicked = Signal(dict)
     right_clicked = Signal(dict, object)
-    rename_requested = Signal(str, str)
+    rename_requested = Signal(str, str, str, str)
 
     def __init__(self, data, parent=None):
         super().__init__(parent)
@@ -355,7 +362,7 @@ class FileItem(QFrame):
         old_path = self.data["path"]
         new_path = posixpath.join(posixpath.dirname(old_path), new_name)
         self.cancel_rename()
-        self.rename_requested.emit(old_path, new_path)
+        self.rename_requested.emit(old_path, new_path, old_name, new_name)
 
     def cancel_rename(self):
         self.layout().setContentsMargins(6, 4, 6, 4)

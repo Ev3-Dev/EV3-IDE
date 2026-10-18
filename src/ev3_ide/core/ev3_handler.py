@@ -73,6 +73,19 @@ class SFTPWorker(QObject):
                 return True
         return False
 
+    def validate_name(self, name):
+        if not name:
+            return False, "The name cannot be empty."
+        if not name.strip():
+            return False, "The name cannot consist only of whitespace."
+        if name in (".", ".."):
+            return False, "This name is not allowed."
+        if "/" in name:
+            return False, "The name cannot contain '/'."
+        if "\0" in name:
+            return False, "The name cannot contain a null character."
+        return True, ""
+
     def list_dir(self, path):
         if not self.is_connected():
             return
@@ -166,6 +179,10 @@ class SFTPWorker(QObject):
         # hier später SSH-Ausführung
 
     def create_file(self, name):
+        ret, message = self.validate_name(name)
+        if not ret:
+            self.notification.emit({"type": "error", "title": "Cannot create file", "message": f"Cannot create file '{name}':\n{message}"})
+            return
         path = posixpath.join(self.current_path, name)
         if not self.is_connected():
             return
@@ -181,6 +198,10 @@ class SFTPWorker(QObject):
             self.notification.emit({"type": "error", "title": "Cannot create file", "message": f"Cannot create file '{posixpath.basename(path)}': {e}"})
 
     def create_directory(self, name):
+        ret, message = self.validate_name(name)
+        if not ret:
+            self.notification.emit({"type": "error", "title": "Cannot create directory", "message": f"Cannot create directory '{name}':\n{message}"})
+            return
         path = posixpath.join(self.current_path, name)
         if not self.is_connected():
             return
@@ -207,6 +228,17 @@ class SFTPWorker(QObject):
         except Exception as e:
             self.notification.emit({"type": "error", "title": "Cannot delete file", "message": f"Cannot delete file '{posixpath.basename(path)}': {e}"})
 
+    def _remove_directory_recursive(self, path):
+        for entry in self.sftp.listdir_attr(path):
+            entry_path = posixpath.join(path, entry.filename)
+            if self._is_protected(entry_path):
+                continue
+            if stat.S_ISDIR(entry.st_mode):
+                self._remove_directory_recursive(entry_path)
+            else:
+                self.sftp.remove(entry_path)
+        self.sftp.rmdir(path)
+
     def delete_directory(self, path):
         if not self.is_connected():
             return
@@ -217,26 +249,29 @@ class SFTPWorker(QObject):
             self.notification.emit({"type": "error", "title": "Cannot delete directory", "message": "The root directory cannot be deleted."})
             return
         try:
-            self.sftp.rmdir(path)
+            self._remove_directory_recursive(path)
             self.directory_deleted.emit(path)
             self.list_dir(self.current_path)
         except Exception as e:
-            self.notification.emit({"type": "error", "title": "Cannot delete directory", "message": f"Cannot delete directory '{posixpath.basename(path)}'. Make sure the directory is empty and you have permission to delete it.\nDetails: {e}"})
+            self.notification.emit({"type": "error", "title": "Cannot delete directory", "message": f"Cannot delete directory '{posixpath.basename(path)}'.\nDetails: {e}"})
 
-    def rename(self, old_path, new_path):
+    def rename(self, old_path, new_path, old_name, new_name):
         if not self.is_connected():
             return
         old_path = posixpath.normpath(old_path)
         new_path = posixpath.normpath(new_path)
-        old_name = posixpath.basename(old_path)
-        new_name = posixpath.basename(new_path)
         if not old_name or not new_name or new_name in [".", "..", "/"]:
             self.notification.emit({"type": "error", "title": "Cannot rename", "message": "The new name is invalid."})
             return
         if old_path == new_path:
+            self.notification.emit({"type": "error", "title": "Cannot rename", "message": f"The new name must be different from the current name."})
             return
         if self._is_protected(old_path):
             self.notification.emit({"type": "error", "title": "Cannot rename", "message": f"'{old_name}' is protected."})
+            return
+        ret, message = self.validate_name(new_name)
+        if not ret:
+            self.notification.emit({"type": "error", "title": "Cannot rename", "message": f"Cannot rename '{old_name}':\n{message}"})
             return
         # Nur innerhalb desselben Verzeichnisses umbenennen
         if posixpath.dirname(old_path) != posixpath.dirname(new_path):
@@ -388,10 +423,10 @@ class EV3Handler(QObject):
             return
         self._worker.enqueue(self._worker.delete_directory, path)
 
-    def rename(self, old_path, new_path):
+    def rename(self, old_path, new_path, old_name, new_name):
         if self._worker is None:
             return
-        self._worker.enqueue(self._worker.rename, old_path, new_path)
+        self._worker.enqueue(self._worker.rename, old_path, new_path, old_name, new_name)
 
     def run_file(self, path, run_mode):
         if self._worker is None:
