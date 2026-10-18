@@ -1,5 +1,8 @@
-from PySide6.QtCore import Qt, QEvent, Signal
+from PySide6.QtCore import Qt, QEvent, Signal, QSize
 from PySide6.QtWidgets import QApplication, QFrame, QVBoxLayout, QPushButton, QTabBar, QPlainTextEdit, QSplitterHandle
+from PySide6.QtGui import QIcon
+
+from ev3_ide.core.resources import resource_path
 
 
 class RightClickMenu(QFrame):
@@ -32,39 +35,54 @@ class RightClickMenu(QFrame):
         self.separator_layout_2.addWidget(self.separator_2)
 
         # Open
-        self.open_button = QPushButton("  Open")
+        self.open_button = QPushButton(" Open")
         self.open_button.setObjectName("combo_item")
         self.open_button.setFixedHeight(26)
+        open_icon = QIcon(resource_path("ui/icons/open.svg"))
+        self.open_button.setIcon(open_icon)
+        self.open_button.setIconSize(QSize(166, 16))
 
         # Run
-        self.run_button = QPushButton("  Run")
+        self.run_button = QPushButton(" Run")
         self.run_button.setObjectName("combo_item")
         self.run_button.setFixedHeight(26)
 
         # Compile
-        self.compile_button = QPushButton("  Compile")
+        self.compile_button = QPushButton(" Compile")
         self.compile_button.setObjectName("combo_item")
         self.compile_button.setFixedHeight(26)
 
         # Rename
-        self.rename_button = QPushButton("  Rename")
+        self.rename_button = QPushButton(" Rename")
         self.rename_button.setObjectName("combo_item")
         self.rename_button.setFixedHeight(26)
+        rename_icon = QIcon(resource_path("ui/icons/rename.svg"))
+        self.rename_button.setIcon(rename_icon)
+        self.rename_button.setIconSize(QSize(166, 16))
 
         # Move
-        self.move_button = QPushButton("  Move")
+        self.move_button = QPushButton(" Move")
         self.move_button.setObjectName("combo_item")
         self.move_button.setFixedHeight(26)
+        move_icon = QIcon(resource_path("ui/icons/move.svg"))
+        self.move_button.setIcon(move_icon)
+        self.move_button.setIconSize(QSize(166, 16))
 
         # Delete
-        self.delete_button = QPushButton("  Delete")
+        self.delete_button = QPushButton(" Delete")
         self.delete_button.setObjectName("combo_item")
         self.delete_button.setFixedHeight(26)
+        delete_icon = QIcon(resource_path("ui/icons/delete.svg"))
+        self.delete_button.setIcon(delete_icon)
+        self.delete_button.setIconSize(QSize(166, 16))
 
         # Properties
-        self.properties_button = QPushButton("  Properties")
+        self.properties_button = QPushButton(" Properties")
         self.properties_button.setObjectName("combo_item")
         self.properties_button.setFixedHeight(26)
+        properties_icon = QIcon(resource_path("ui/icons/properties.svg"))
+        self.properties_button.setIcon(properties_icon)
+        self.properties_button.setIconSize(QSize(166, 16))
 
         # Popup
         self.setObjectName("combo_popup")
