@@ -327,6 +327,7 @@ class FileItem(QFrame):
         self.rename_edit = QLineEdit(self.data["name"])
         self.rename_edit.setObjectName("file_input")
         self.rename_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.rename_edit.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
         self.rename_edit.setFixedHeight(28)
         self.rename_edit.setFont(self.name_label.font())
         self.rename_edit.setPlaceholderText(self.data["name"])

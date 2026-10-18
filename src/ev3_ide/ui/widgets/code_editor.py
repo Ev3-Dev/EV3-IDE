@@ -56,6 +56,10 @@ class CodeEditor(QPlainTextEdit):
         self.timer.timeout.connect(self.physics_tick)
         self.verticalScrollBar().valueChanged.connect(self.sync_on_manual_scroll)
 
+    def set_path(self, new_path):
+        self.path = new_path
+        # Highlighter updaten
+
     @classmethod
     def create_font_from_ttf(cls, ttf_path, size=10):
         if cls._font_family is None:

@@ -1,6 +1,8 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QMessageBox
 from PySide6.QtCore import Signal, QSize
 from PySide6.QtGui import QIcon, QShortcut, QKeySequence
+import posixpath
+
 from ev3_ide.ui.widgets.code_editor import CodeEditor
 from ev3_ide.core.resources import resource_path
 
@@ -151,6 +153,33 @@ class EditorTabs(QTabWidget):
             return
         self.pending_close_path = None
         self._close_tab(index)
+
+    def update_open_tabs(self, old_path, new_path):
+        old_path = posixpath.normpath(old_path)
+        new_path = posixpath.normpath(new_path)
+        for index in range(self.count()):
+            tab = self.widget(index)
+            if not isinstance(tab, EditorTab):
+                continue
+            old_file_path = posixpath.normpath(tab.path)
+            # Prüfen, ob die Datei selbst oder ihr übergeordnetes Verzeichnis umbenannt wurde
+            if old_file_path == old_path:
+                updated_path = new_path
+            elif old_file_path.startswith(old_path + "/"):
+                relative_path = posixpath.relpath(old_file_path, old_path)
+                updated_path = posixpath.join(new_path, relative_path)
+            else:
+                continue
+            # Internen Dateipfad aktualisieren
+            tab.path = updated_path
+            # Dateinamen und Tooltip aktualisieren
+            tab.name = posixpath.basename(updated_path)
+            self.setTabToolTip(index, updated_path)
+            # Den Editor über den neuen Pfad informieren
+            tab.editor.set_path(updated_path)
+            # Tab-Titel aktualisieren, ohne den Unsaved-Status zu verlieren
+            title = f"{tab.name} *" if tab.modified else tab.name
+            self.setTabText(index, title)
 
     def close_tab(self, index):
         if self.pending_close_path is not None:

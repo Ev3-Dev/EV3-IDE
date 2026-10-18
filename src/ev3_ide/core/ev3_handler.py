@@ -18,6 +18,7 @@ class SFTPWorker(QObject):
     directory_created = Signal(str)
     file_deleted = Signal(str)
     directory_deleted = Signal(str)
+    renamed = Signal(str, str)
 
     output_received = Signal(str)
     process_finished = Signal(int)
@@ -223,7 +224,41 @@ class SFTPWorker(QObject):
             self.notification.emit({"type": "error", "title": "Cannot delete directory", "message": f"Cannot delete directory '{posixpath.basename(path)}'. Make sure the directory is empty and you have permission to delete it.\nDetails: {e}"})
 
     def rename(self, old_path, new_path):
-        print(f"Renaming:\nOld path: {old_path}\nNew path: {new_path}")
+        if not self.is_connected():
+            return
+        old_path = posixpath.normpath(old_path)
+        new_path = posixpath.normpath(new_path)
+        old_name = posixpath.basename(old_path)
+        new_name = posixpath.basename(new_path)
+        if not old_name or not new_name or new_name in [".", "..", "/"]:
+            self.notification.emit({"type": "error", "title": "Cannot rename", "message": "The new name is invalid."})
+            return
+        if old_path == new_path:
+            return
+        if self._is_protected(old_path):
+            self.notification.emit({"type": "error", "title": "Cannot rename", "message": f"'{old_name}' is protected."})
+            return
+        # Nur innerhalb desselben Verzeichnisses umbenennen
+        if posixpath.dirname(old_path) != posixpath.dirname(new_path):
+            self.notification.emit({"type": "error", "title": "Cannot rename", "message": "Renaming to another directory is not allowed."})
+            return
+        if self._is_protected(new_path):
+            self.notification.emit({"type": "error", "title": "Cannot rename", "message": f"'{new_name}' is a protected path."})
+            return
+        try:
+            # Verhindern, dass versehentlich ein vorhandenes Ziel überschrieben wird
+            try:
+                self.sftp.stat(new_path)
+            except FileNotFoundError:
+                pass
+            else:
+                self.notification.emit({"type": "error", "title": "Cannot rename", "message": f"'{new_name}' already exists."})
+                return
+            self.sftp.rename(old_path, new_path)
+            self.renamed.emit(old_path, new_path)
+            self.list_dir(posixpath.dirname(old_path))
+        except Exception as e:
+            self.notification.emit({"type": "error", "title": "Cannot rename", "message": f"Cannot rename '{old_name}' to '{new_name}': {e}"})
 
 
 class EV3Handler(QObject):
@@ -236,6 +271,7 @@ class EV3Handler(QObject):
     battery_updated = Signal(dict)
     file_deleted = Signal(str)
     directory_deleted = Signal(str)
+    renamed = Signal(str, str)
 
     output_received = Signal(str)
     process_finished = Signal(int)
@@ -296,6 +332,7 @@ class EV3Handler(QObject):
         self._worker.notification.connect(self.notification)
         self._worker.file_deleted.connect(self.file_deleted)
         self._worker.directory_deleted.connect(self.directory_deleted)
+        self._worker.renamed.connect(self.renamed)
 
         self._worker_thread = threading.Thread(target=self._worker.run, daemon=True)
 

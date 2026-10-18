@@ -142,6 +142,7 @@ class MainWindow(QMainWindow):
         self.ev3_handler.notification.connect(self.handle_notification)
         self.ev3_handler.file_deleted.connect(self.handle_file_deleted)
         self.ev3_handler.directory_deleted.connect(self.handle_directory_deleted)
+        self.ev3_handler.renamed.connect(self.handle_renamed)
 
         self.editor_tabs.save_requested.connect(self.ev3_handler.save_file)
         self.editor_tabs.currentChanged.connect(self.update_toolbar)
@@ -228,6 +229,9 @@ class MainWindow(QMainWindow):
 
     def handle_directory_deleted(self, path):
         pass
+
+    def handle_renamed(self, old_path, new_path):
+        self.editor_tabs.update_open_tabs(old_path, new_path)
 
     def handle_notification(self, data):
         self.notification_manager.show(notification_type=data["type"], title=data["title"], message=data["message"])
