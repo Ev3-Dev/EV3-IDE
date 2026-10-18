@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, QEvent, Signal
-from PySide6.QtWidgets import QApplication, QFrame, QVBoxLayout, QPushButton, QSpacerItem
+from PySide6.QtWidgets import QApplication, QFrame, QVBoxLayout, QPushButton, QTabBar
 
 
 class RightClickMenu(QFrame):
@@ -129,5 +129,9 @@ class RightClickMenu(QFrame):
             popup_rect_global = popup_rect.translated(popup_top_left)
             if not popup_rect_global.contains(global_click_pos):
                 self.close_menu()
-                return False
+                widget = QApplication.widgetAt(global_click_pos)
+                if widget is not None:
+                    if isinstance(widget, QPushButton) or isinstance(widget, QTabBar):
+                        return False
+                return True
         return super().eventFilter(obj, event)

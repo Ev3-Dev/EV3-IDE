@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton, QLineEdit, QSizePolicy
+from PySide6.QtWidgets import QApplication, QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton, QLineEdit, QSizePolicy, QTabBar
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtCore import Signal, Qt, QPropertyAnimation, QEasingCurve, QEvent
 import posixpath
@@ -250,6 +250,10 @@ class FilesWidget(QWidget):
                 if not edit_rect.contains(click_pos):
                     item.cancel_rename()
                     self.renaming_item = None
+                    widget = QApplication.widgetAt(click_pos)
+                    if widget is not None:
+                        if isinstance(widget, QPushButton) or isinstance(widget, QTabBar):
+                            return False
                     return True
         if self.input_edit is not None:
             if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
@@ -263,6 +267,10 @@ class FilesWidget(QWidget):
                     input_rect.translate(input_pos)
                     if not input_rect.contains(click_pos):
                         self.cancel_inline_input()
+                        widget = QApplication.widgetAt(click_pos)
+                        if widget is not None:
+                            if isinstance(widget, QPushButton) or isinstance(widget, QTabBar):
+                                return False
                         return True
             if obj is self.input_edit and event.type() == QEvent.Type.FocusOut:
                 self.cancel_inline_input()
@@ -381,6 +389,4 @@ class FileItem(QFrame):
                 if event.key() == Qt.Key.Key_Escape:
                     self.cancel_rename()
                     return True
-            if event.type() == QEvent.Type.FocusOut:
-                self.cancel_rename()
         return super().eventFilter(obj, event)

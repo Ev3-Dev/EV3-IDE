@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QApplication, QFrame, QVBoxLayout, QPushButton
+from PySide6.QtWidgets import QApplication, QFrame, QVBoxLayout, QPushButton, QTabBar
 
 
 class NewMenu(QFrame):
@@ -68,5 +68,9 @@ class NewMenu(QFrame):
             popup_rect_global = popup_rect.translated(popup_top_left)
             if not popup_rect_global.contains(global_click_pos):
                 self.hide()
+                widget = QApplication.widgetAt(global_click_pos)
+                if widget is not None:
+                    if isinstance(widget, QPushButton) or isinstance(widget, QTabBar):
+                        return False
                 return True
         return super().eventFilter(obj, event)
