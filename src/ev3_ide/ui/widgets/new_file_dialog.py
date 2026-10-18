@@ -52,9 +52,7 @@ class NewMenu(QFrame):
         self.setFocus()
 
     def keyPressEvent(self, event):
-        print("Event triggered")
         if event.key() == Qt.Key.Key_Escape:
-            print("Escape pressed")
             self.hide()
             event.accept()
         else:
@@ -70,5 +68,5 @@ class NewMenu(QFrame):
             popup_rect_global = popup_rect.translated(popup_top_left)
             if not popup_rect_global.contains(global_click_pos):
                 self.hide()
-                return False
+                return True
         return super().eventFilter(obj, event)

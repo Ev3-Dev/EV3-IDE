@@ -61,5 +61,5 @@ class IDEComboBox(QComboBox):
             popup_rect_global = popup_rect.translated(popup_top_left)
             if not popup_rect_global.contains(global_click_pos):
                 self.popup.hide()
-                return False
+                return True
         return super().eventFilter(obj, event)
