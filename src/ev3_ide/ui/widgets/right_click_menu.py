@@ -46,11 +46,17 @@ class RightClickMenu(QFrame):
         self.run_button = QPushButton(" Run")
         self.run_button.setObjectName("combo_item")
         self.run_button.setFixedHeight(26)
+        run_icon = QIcon(resource_path("ui/icons/run-right-click.svg"))
+        self.run_button.setIcon(run_icon)
+        self.run_button.setIconSize(QSize(20, 20))
 
         # Compile
         self.compile_button = QPushButton(" Compile")
         self.compile_button.setObjectName("combo_item")
         self.compile_button.setFixedHeight(26)
+        compile_icon = QIcon(resource_path("ui/icons/compile.svg"))
+        self.compile_button.setIcon(compile_icon)
+        self.compile_button.setIconSize(QSize(20, 20))
 
         # Rename
         self.rename_button = QPushButton(" Rename")
