@@ -404,7 +404,7 @@ QLabel#notification_message {
     color: #d4d4d4;
 }
 
-/* Properties */
+/* -------- Properties -------- */
 
 QDialog#properties_dialog {
     background-color: #191a1c;

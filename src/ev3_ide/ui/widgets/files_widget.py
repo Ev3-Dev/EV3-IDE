@@ -142,8 +142,7 @@ class FilesWidget(QWidget):
     def open_properties_dialog(self, data):
         self.right_click_menu.close_menu()
         properties_dialog = PropertiesDialog(data, self)
-        properties_dialog.show()
-        properties_dialog.raise_()
+        properties_dialog.exec()
 
     def show_new_menu(self):
         self.new_menu.show_at(self.new_button)

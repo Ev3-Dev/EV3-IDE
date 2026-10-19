@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QRect, QParallelAnimationGroup
 from PySide6.QtWidgets import QApplication, QDialog, QFrame, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QWidget, QGridLayout
 from PySide6.QtGui import QIcon
 from datetime import datetime
@@ -14,8 +14,13 @@ class TitleBar(QFrame):
         self.setObjectName("title_bar")
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(10, 0, 0, 0)
+        layout.setContentsMargins(6, 0, 0, 0)
         layout.setSpacing(8)
+
+        self.icon_label = QLabel()
+        icon = QIcon(resource_path("ui/icons/properties.svg"))
+        pixmap = icon.pixmap(20, 20)
+        self.icon_label.setPixmap(pixmap)
 
         self.title_label = QLabel(title)
         self.title_label.setObjectName("title_label")
@@ -28,6 +33,7 @@ class TitleBar(QFrame):
         self.close_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.close_button.clicked.connect(self._close_window)
 
+        layout.addWidget(self.icon_label)
         layout.addWidget(self.title_label)
         layout.addStretch()
         layout.addWidget(self.close_button)
@@ -57,7 +63,7 @@ class PropertiesDialog(QDialog):
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose,True)
 
-        self.setFixedSize(400, 290)
+        self.resize(400, 290)
         self.setObjectName("properties_dialog")
 
         main_layout = QVBoxLayout(self)
@@ -144,6 +150,18 @@ class PropertiesDialog(QDialog):
         if value is None:
             return "Unknown"
         return "Yes" if value else "No"
+
+    def fade_out(self):
+        if getattr(self, "_closing", False):
+            return
+        self._closing = True
+        self.animation = QPropertyAnimation(self, b"windowOpacity", self)
+        self.animation.setDuration(180)
+        self.animation.setStartValue(self.windowOpacity())
+        self.animation.setEndValue(0.0)
+        self.animation.setEasingCurve(QEasingCurve.Type.InCubic)
+        self.animation.finished.connect(self.close)
+        self.animation.start()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Escape:
