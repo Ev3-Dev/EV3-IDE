@@ -406,10 +406,9 @@ QLabel#notification_message {
 
 /* -------- Properties -------- */
 
-QDialog#properties_dialog {
+QDialog#dialog_window {
     background-color: #191a1c;
     color: #D4D4D4;
-    border: 10px solid white;
 }
 
 QFrame#title_bar {
@@ -418,9 +417,9 @@ QFrame#title_bar {
 }
 
 QLabel#title_label {
-    color: #D4D4D4;
-    font-size: 12px;
-    font-weight: 500;
+    color: #d4d4d4;
+    font-size: 13px;
+    font-weight: 650;
 }
 
 QWidget#content {
@@ -448,9 +447,19 @@ QPushButton#dialog_close_button {
     color: #d4d4d4;
     border: 0px solid #454545;
     border-radius: 4px;
-    padding: 5px 16px;
+    padding: 5px 20px;
+}
+
+QPushButton#dialog_close_button:focus {
+    outline: none;
+    border: 1px solid #0078d4;
 }
 
 QPushButton#dialog_close_button:hover {
     background-color: #414141;
+}
+
+QLabel#confirm_message {
+    color: #d4d4d4;
+    font-size: 12px;
 }

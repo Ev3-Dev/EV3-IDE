@@ -7,6 +7,7 @@ from ev3_ide.core.resources import resource_path
 from ev3_ide.ui.widgets.new_file_dialog import NewMenu
 from ev3_ide.ui.widgets.right_click_menu import RightClickMenu
 from ev3_ide.ui.widgets.properties_dialog import PropertiesDialog
+from ev3_ide.ui.widgets.confirm_dialog import ConfirmDialog
 
 
 class SmoothScrollArea(QScrollArea):
@@ -118,8 +119,9 @@ class FilesWidget(QWidget):
 
     def confirm_delete(self, name, is_file):
         item_type = "file" if is_file else "directory"
-        result = QMessageBox.question(self,"Confirm Deletion",f"Do you really want to delete the {item_type}\n'{name}'{" and all of its contents" if item_type == "directory" else ""}?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
-        return result == QMessageBox.StandardButton.Yes
+        extra_text = " and all of its contents" if not is_file else ""
+        dialog = ConfirmDialog(title="Confirm Deletion", message=f"Do you really want to delete the {item_type}\n'{name}'{extra_text}?", parent=self, confirm_text="Delete", cancel_text="Cancel",)
+        return dialog.exec() == QDialog.DialogCode.Accepted
 
     def delete_from_menu(self):
         data = self.right_click_menu.data

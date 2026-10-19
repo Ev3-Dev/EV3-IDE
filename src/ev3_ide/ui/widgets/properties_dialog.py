@@ -3,12 +3,13 @@ from PySide6.QtWidgets import QApplication, QDialog, QFrame, QHBoxLayout, QVBoxL
 from PySide6.QtGui import QIcon
 from datetime import datetime
 import stat
+import ctypes
 
 from ev3_ide.core.resources import resource_path
 
 
 class TitleBar(QFrame):
-    def __init__(self, title: str, parent=None):
+    def __init__(self, title, icon_name, parent=None):
         super().__init__(parent)
 
         self.setObjectName("title_bar")
@@ -18,7 +19,7 @@ class TitleBar(QFrame):
         layout.setSpacing(8)
 
         self.icon_label = QLabel()
-        icon = QIcon(resource_path("ui/icons/properties.svg"))
+        icon = QIcon(resource_path(f"ui/icons/{icon_name}.svg"))
         pixmap = icon.pixmap(20, 20)
         self.icon_label.setPixmap(pixmap)
 
@@ -60,18 +61,18 @@ class PropertiesDialog(QDialog):
 
         self.file_data = file_data
 
-        self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
+        self.setWindowFlags(Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose,True)
 
         self.resize(400, 290)
-        self.setObjectName("properties_dialog")
+        self.setObjectName("dialog_window")
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(1, 1, 1, 1)
         main_layout.setSpacing(0)
 
         # Custom title bar
-        self.title_bar = TitleBar("Properties", self)
+        self.title_bar = TitleBar("Properties", "properties", self)
         self.title_bar.setFixedHeight(36)
 
         main_layout.addWidget(self.title_bar)
@@ -151,21 +152,8 @@ class PropertiesDialog(QDialog):
             return "Unknown"
         return "Yes" if value else "No"
 
-    def fade_out(self):
-        if getattr(self, "_closing", False):
-            return
-        self._closing = True
-        self.animation = QPropertyAnimation(self, b"windowOpacity", self)
-        self.animation.setDuration(180)
-        self.animation.setStartValue(self.windowOpacity())
-        self.animation.setEndValue(0.0)
-        self.animation.setEasingCurve(QEasingCurve.Type.InCubic)
-        self.animation.finished.connect(self.close)
-        self.animation.start()
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_Escape:
-            self.close()
-            event.accept()
-            return
-        super().keyPressEvent(event)
+    def nativeEvent(self, event_type, message):
+        msg = ctypes.wintypes.MSG.from_address(int(message))
+        if msg.message == 0x0083:
+            return True, 0
+        return super().nativeEvent(event_type, message)
