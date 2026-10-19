@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, QEvent, Signal, QSize
 from PySide6.QtWidgets import QApplication, QFrame, QVBoxLayout, QPushButton, QTabBar, QPlainTextEdit, QSplitterHandle
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QShortcut, QKeySequence
 
 from ev3_ide.core.resources import resource_path
 
@@ -101,9 +101,27 @@ class RightClickMenu(QFrame):
         self.popup_layout.addWidget(self.separator_container_2)
         self.popup_layout.addWidget(self.properties_button)
 
+        # Shortcuts
+        self.open_shortcut = QShortcut(QKeySequence(Qt.Key.Key_Return), self)
+        self.open_shortcut.activated.connect(lambda: self.handle_shortcut("open"))
+        self.rename_shortcut = QShortcut(QKeySequence(Qt.Key.Key_F2), self)
+        self.rename_shortcut.activated.connect(lambda: self.handle_shortcut("rename"))
+        self.delete_shortcut = QShortcut(QKeySequence(Qt.Key.Key_Backspace), self)
+        self.delete_shortcut.activated.connect(lambda: self.handle_shortcut("delete"))
+
         self.hide()
 
         QApplication.instance().installEventFilter(self)
+
+    def handle_shortcut(self, action):
+        if not self.isVisible():
+            return
+        if action == "open":
+            self.open_button.click()
+        elif action == "rename":
+            self.rename_button.click()
+        elif action == "delete":
+            self.delete_button.click()
 
     def set_items(self, data):
         self.data = data
@@ -140,6 +158,9 @@ class RightClickMenu(QFrame):
             if event.key() == Qt.Key.Key_Escape:
                 self.close_menu()
                 return True
+        if event.type() == QEvent.Type.Wheel:
+            self.close_menu()
+            return False
         if event.type() == QEvent.Type.MouseButtonPress:
             global_click_pos = event.globalPosition().toPoint()
             popup_rect = self.rect()

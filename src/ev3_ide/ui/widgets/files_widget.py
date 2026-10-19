@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton, QLineEdit, QSizePolicy, QTabBar, QPlainTextEdit, QSplitterHandle, QMessageBox
+from PySide6.QtWidgets import QApplication, QWidget, QFrame, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel, QPushButton, QLineEdit, QSizePolicy, QTabBar, QPlainTextEdit, QSplitterHandle, QMessageBox, QDialog
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtCore import Signal, Qt, QPropertyAnimation, QEasingCurve, QEvent
 import posixpath
@@ -6,6 +6,7 @@ import posixpath
 from ev3_ide.core.resources import resource_path
 from ev3_ide.ui.widgets.new_file_dialog import NewMenu
 from ev3_ide.ui.widgets.right_click_menu import RightClickMenu
+from ev3_ide.ui.widgets.properties_dialog import PropertiesDialog
 
 
 class SmoothScrollArea(QScrollArea):
@@ -53,6 +54,7 @@ class FilesWidget(QWidget):
         self.right_click_menu.delete_button.clicked.connect(self.delete_from_menu)
         self.right_click_menu.closed.connect(self.clear_selected_item)
         self.right_click_menu.rename_button.clicked.connect(self.rename_from_menu)
+        self.right_click_menu.properties_button.clicked.connect(lambda: self.open_properties_dialog(self.right_click_menu.data))
 
         # Obere Leiste
         self.back_button = QPushButton()
@@ -136,6 +138,12 @@ class FilesWidget(QWidget):
         self.right_click_menu.close_menu()
         self.renaming_item = item
         item.start_rename()
+
+    def open_properties_dialog(self, data):
+        self.right_click_menu.close_menu()
+        properties_dialog = PropertiesDialog(data, self)
+        properties_dialog.show()
+        properties_dialog.raise_()
 
     def show_new_menu(self):
         self.new_menu.show_at(self.new_button)

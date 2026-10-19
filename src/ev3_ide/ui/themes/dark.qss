@@ -109,7 +109,7 @@ QPushButton#close_button {
     border-radius: 0px;
 
     color: white;
-    background-color: #26282c;
+    background-color: transparent;
 }
 
 QPushButton#close_button:hover {
@@ -398,4 +398,55 @@ QPushButton#notification_close_button:hover {
 
 QLabel#notification_message {
     color: #d4d4d4;
+}
+
+/* Properties */
+
+QDialog#properties_dialog {
+    background-color: #191a1c;
+    color: #D4D4D4;
+    border: 10px solid white;
+}
+
+QFrame#title_bar {
+    background-color: #191a1c;
+    border-bottom: 1px solid #3b3b3c;
+}
+
+QLabel#title_label {
+    color: #D4D4D4;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+QWidget#content {
+    background-color: #191a1c;
+}
+
+QLabel#file_name {
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+QLabel#property_label {
+    color: #999999;
+    font-size: 12px;
+}
+
+QLabel#property_value {
+    color: #D4D4D4;
+    font-size: 12px;
+}
+
+QPushButton#dialog_close_button {
+    background-color: #333333;
+    color: #d4d4d4;
+    border: 0px solid #454545;
+    border-radius: 4px;
+    padding: 5px 16px;
+}
+
+QPushButton#dialog_close_button:hover {
+    background-color: #414141;
 }
