@@ -40,7 +40,7 @@ class RightClickMenu(QFrame):
         self.open_button.setFixedHeight(26)
         open_icon = QIcon(resource_path("ui/icons/open.svg"))
         self.open_button.setIcon(open_icon)
-        self.open_button.setIconSize(QSize(166, 16))
+        self.open_button.setIconSize(QSize(20, 20))
 
         # Run
         self.run_button = QPushButton(" Run")
@@ -58,7 +58,7 @@ class RightClickMenu(QFrame):
         self.rename_button.setFixedHeight(26)
         rename_icon = QIcon(resource_path("ui/icons/rename.svg"))
         self.rename_button.setIcon(rename_icon)
-        self.rename_button.setIconSize(QSize(166, 16))
+        self.rename_button.setIconSize(QSize(20, 20))
 
         # Move
         self.move_button = QPushButton(" Move")
@@ -66,7 +66,7 @@ class RightClickMenu(QFrame):
         self.move_button.setFixedHeight(26)
         move_icon = QIcon(resource_path("ui/icons/move.svg"))
         self.move_button.setIcon(move_icon)
-        self.move_button.setIconSize(QSize(166, 16))
+        self.move_button.setIconSize(QSize(20, 20))
 
         # Delete
         self.delete_button = QPushButton(" Delete")
@@ -74,7 +74,7 @@ class RightClickMenu(QFrame):
         self.delete_button.setFixedHeight(26)
         delete_icon = QIcon(resource_path("ui/icons/delete.svg"))
         self.delete_button.setIcon(delete_icon)
-        self.delete_button.setIconSize(QSize(166, 16))
+        self.delete_button.setIconSize(QSize(20, 20))
 
         # Properties
         self.properties_button = QPushButton(" Properties")
@@ -82,7 +82,7 @@ class RightClickMenu(QFrame):
         self.properties_button.setFixedHeight(26)
         properties_icon = QIcon(resource_path("ui/icons/properties.svg"))
         self.properties_button.setIcon(properties_icon)
-        self.properties_button.setIconSize(QSize(166, 16))
+        self.properties_button.setIconSize(QSize(20, 20))
 
         # Popup
         self.setObjectName("combo_popup")

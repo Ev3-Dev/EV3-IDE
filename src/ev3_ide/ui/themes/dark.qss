@@ -277,6 +277,10 @@ QPushButton#combo_item:hover {
     background-color: #444649;
 }
 
+QPushButton#combo_item:pressed {
+    background-color: #484b4e;
+}
+
 QFrame#context_separator {
     background-color: #404040;
 }
