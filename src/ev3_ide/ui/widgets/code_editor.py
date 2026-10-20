@@ -1,8 +1,10 @@
 from PySide6.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
 from PySide6.QtGui import QFont, QFontDatabase, QPainter, QColor, QTextFormat
 from PySide6.QtCore import Qt, QSize, QTimer
+from pathlib import Path
 
 from ev3_ide.core.resources import resource_path
+from ev3_ide.ui.widgets.syntax_highlighters.python_highlighter import PythonHighlighter
 
 
 class LineNumberArea(QWidget):
@@ -29,6 +31,9 @@ class CodeEditor(QPlainTextEdit):
         super().__init__(parent)
 
         self.path = path
+
+        self.highlighter = None
+        self.set_highlighter()
 
         self.setObjectName("code_editor")
         self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
@@ -58,7 +63,16 @@ class CodeEditor(QPlainTextEdit):
 
     def set_path(self, new_path):
         self.path = new_path
-        # Highlighter updaten
+        self.set_highlighter()
+
+    def set_highlighter(self):
+        suffix = Path(self.path).suffix.lower()
+        if self.highlighter is not None:
+            self.highlighter.setDocument(None)
+            self.highlighter.deleteLater()
+            self.highlighter = None
+        if suffix == ".py":
+            self.highlighter = PythonHighlighter(self.document())
 
     @classmethod
     def create_font_from_ttf(cls, ttf_path, size=10):
@@ -87,6 +101,7 @@ class CodeEditor(QPlainTextEdit):
             self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
         if rect.contains(self.viewport().rect()):
             self.update_line_number_area_width()
+        # self.line_number_area.update()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -153,3 +168,9 @@ class CodeEditor(QPlainTextEdit):
             self.precise_value = float(scrollbar.maximum())
             self.velocity = 0.0
         scrollbar.setValue(int(round(self.precise_value)))
+
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+            self.insertPlainText("\n")
+            return
+        super().keyPressEvent(event)
