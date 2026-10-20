@@ -50,7 +50,7 @@ class FilesWidget(QWidget):
         self.is_ev3_connected = False
         self.selected_item = None
 
-        self.right_click_menu = RightClickMenu(overlay_parent)
+        self.right_click_menu = RightClickMenu(self.set_file_interaction_enabled, overlay_parent)
         self.right_click_menu.open_button.clicked.connect(self.open_from_menu)
         self.right_click_menu.delete_button.clicked.connect(self.delete_from_menu)
         self.right_click_menu.closed.connect(self.clear_selected_item)
@@ -70,7 +70,7 @@ class FilesWidget(QWidget):
         self.home_button.setObjectName("files_home_button")
         self.home_button.clicked.connect(self.home_requested)
 
-        self.new_menu = NewMenu(overlay_parent)
+        self.new_menu = NewMenu(self.set_file_interaction_enabled, overlay_parent)
         self.new_menu.file_action.triggered.connect(self.start_create_file)
         self.new_menu.directory_action.triggered.connect(self.start_create_directory)
 
@@ -147,14 +147,26 @@ class FilesWidget(QWidget):
         properties_dialog.exec()
 
     def show_new_menu(self):
+        self.set_file_interaction_enabled(False)
         self.new_menu.show_at(self.new_button)
 
     def clear_selected_item(self):
+        self.set_file_interaction_enabled(True)
         if self.selected_item is not None:
             self.selected_item.set_selected(False)
             self.selected_item = None
 
+    def set_file_interaction_enabled(self, enabled: bool):
+        for index in range(self.file_layout.count()):
+            widget = self.file_layout.itemAt(index).widget()
+            if isinstance(widget, FileItem):
+                if widget.rename_edit is None:
+                    widget.setEnabled(enabled)
+                else:
+                    widget.setEnabled(True)
+
     def show_right_click_menu(self, pos, data):
+        self.set_file_interaction_enabled(False)
         # Vorherige Markierung entfernen
         if self.selected_item is not None:
             self.selected_item.set_selected(False)
@@ -182,9 +194,11 @@ class FilesWidget(QWidget):
         if not name:
             return
         if not self.input_type:
+            self.set_file_interaction_enabled(True)
             self.input_edit.deleteLater()
             self.input_edit = None
             return
+        self.set_file_interaction_enabled(True)
         if self.input_type == "file":
             self.create_file_requested.emit(name)
         elif self.input_type == "directory":
@@ -193,6 +207,7 @@ class FilesWidget(QWidget):
         self.input_edit = None
 
     def cancel_inline_input(self):
+        self.set_file_interaction_enabled(True)
         if self.input_edit is None:
             return
         self.input_edit.deleteLater()
@@ -202,6 +217,7 @@ class FilesWidget(QWidget):
     def start_inline_input(self, item_type, placeholder):
         if not self.is_ev3_connected:
             return
+        self.set_file_interaction_enabled(False)
         self.input_type = item_type
         self.input_edit = QLineEdit()
         self.input_edit.setPlaceholderText(placeholder)
@@ -219,10 +235,12 @@ class FilesWidget(QWidget):
             item.cancel_rename()
 
     def start_create_file(self):
+        self.set_file_interaction_enabled(False)
         self.new_menu.hide()
         self.start_inline_input(item_type="file", placeholder="Filename")
 
     def start_create_directory(self):
+        self.set_file_interaction_enabled(False)
         self.new_menu.hide()
         self.start_inline_input(item_type="directory", placeholder="Directory name")
 
@@ -234,6 +252,7 @@ class FilesWidget(QWidget):
         self.refresh_requested.emit()
 
     def update_directory(self, entries):
+        self.set_file_interaction_enabled(True)
         if self.selected_item is not None:
             self.selected_item = None
         self.right_click_menu.close_menu()
@@ -246,7 +265,7 @@ class FilesWidget(QWidget):
 
         # Neue Einträge hinzufügen
         for entry in entries:
-            file_item = FileItem(entry)
+            file_item = FileItem(entry, self.set_file_interaction_enabled)
             file_item.clicked.connect(self.item_clicked)
             file_item.right_clicked.connect(lambda data, pos: self.show_right_click_menu(pos, data))
             self.file_layout.addWidget(file_item)
@@ -305,13 +324,14 @@ class FileItem(QFrame):
     right_clicked = Signal(dict, object)
     rename_requested = Signal(str, str, str, str)
 
-    def __init__(self, data, parent=None):
+    def __init__(self, data, set_file_interaction_enabled, parent=None):
         super().__init__(parent)
 
         self.setObjectName("file_item")
         self.setFixedHeight(30)
 
         self.data = data
+        self.set_file_interaction_enabled = set_file_interaction_enabled
         self.rename_edit = None
 
         self.unclickable = False
@@ -336,6 +356,7 @@ class FileItem(QFrame):
 
     def start_rename(self):
         if self.rename_edit is not None:
+            self.set_file_interaction_enabled(True)
             return
         self.unclickable = True
         self.set_rename_blocked(True)
@@ -357,10 +378,12 @@ class FileItem(QFrame):
         self.rename_edit.returnPressed.connect(self.finish_rename)
         self.rename_edit.selectAll()
         self.rename_edit.setFocus()
+        self.set_file_interaction_enabled(False)
 
     def finish_rename(self):
         self.unclickable = False
         self.set_rename_blocked(False)
+        self.set_file_interaction_enabled(True)
         if self.rename_edit is None:
             return
         new_name = self.rename_edit.text().strip()
@@ -374,6 +397,7 @@ class FileItem(QFrame):
         self.rename_requested.emit(old_path, new_path, old_name, new_name)
 
     def cancel_rename(self):
+        self.set_file_interaction_enabled(True)
         self.layout().setContentsMargins(6, 4, 6, 4)
         self.unclickable = False
         self.set_rename_blocked(False)

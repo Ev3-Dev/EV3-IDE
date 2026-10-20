@@ -23,8 +23,10 @@ class LeftSidebar(QFrame):
         self.setObjectName("left_sidebar")
         self.setMinimumWidth(250)
 
+        self.files_widget = FilesWidget(overlay_parent=self)
+
         # -------- Button-Leiste --------
-        self.dropdown = IDEComboBox(self)
+        self.dropdown = IDEComboBox(self.files_widget.set_file_interaction_enabled, self)
         self.dropdown.setObjectName("left_sidebar_dropdown")
         self.dropdown.addItems(["Files", "EV3 State", "Libraries"])
 
@@ -38,7 +40,6 @@ class LeftSidebar(QFrame):
         self.dynamic_buttons_layout.setSpacing(0)
         self.buttons_layout.addLayout(self.dynamic_buttons_layout)
 
-        self.files_widget = FilesWidget(overlay_parent=self)
         self.files_widget.create_file_requested.connect(self.create_file_requested)
         self.files_widget.create_directory_requested.connect(self.create_directory_requested)
         self.ev3_view = QWidget()

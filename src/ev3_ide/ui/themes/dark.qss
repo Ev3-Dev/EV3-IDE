@@ -428,9 +428,12 @@ QWidget#content {
 
 QLabel#file_name {
     color: #d4d4d4;
-    font-style: italic;
+    background-color: #2e2e2e;
+
     font-size: 15px;
     font-weight: 650;
+    padding: 3px;
+    border-radius: 3px;
 }
 
 QLabel#property_label {

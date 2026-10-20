@@ -4,8 +4,10 @@ from PySide6.QtWidgets import QApplication, QFrame, QVBoxLayout, QPushButton, QT
 
 
 class NewMenu(QFrame):
-    def __init__(self, parent=None):
+    def __init__(self, set_file_interaction_enabled, parent=None):
         super().__init__(parent)
+
+        self.set_file_interaction_enabled = set_file_interaction_enabled
 
         # Aktionen
         self.file_action = QAction("file", self)
@@ -53,6 +55,7 @@ class NewMenu(QFrame):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Escape:
+            self.set_file_interaction_enabled(True)
             self.hide()
             event.accept()
         else:
@@ -67,6 +70,7 @@ class NewMenu(QFrame):
             popup_top_left = self.mapToGlobal(popup_rect.topLeft())
             popup_rect_global = popup_rect.translated(popup_top_left)
             if not popup_rect_global.contains(global_click_pos):
+                self.set_file_interaction_enabled(True)
                 self.hide()
                 widget = QApplication.widgetAt(global_click_pos)
                 if isinstance(widget, (QPushButton, QTabBar, QPlainTextEdit, QSplitterHandle)):

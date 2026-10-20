@@ -3,9 +3,10 @@ from PySide6.QtCore import Qt, QEvent
 
 
 class IDEComboBox(QComboBox):
-    def __init__(self, parent=None):
+    def __init__(self, set_file_interaction_enabled, parent=None):
         super().__init__(parent)
         self.parent = parent
+        self.set_file_interaction_enabled = set_file_interaction_enabled
 
         self.setFixedSize(110, 30)
         self.popup = QFrame(self.parent)
@@ -31,6 +32,7 @@ class IDEComboBox(QComboBox):
 
     def _select_item(self, index):
         self.setCurrentIndex(index)
+        self.set_file_interaction_enabled(True)
         self.popup.hide()
 
     def showPopup(self):
@@ -40,12 +42,15 @@ class IDEComboBox(QComboBox):
         self.popup.raise_()
         self.popup.show()
         self.setFocus()
+        self.set_file_interaction_enabled(False)
 
     def hidePopup(self):
+        self.set_file_interaction_enabled(True)
         self.popup.hide()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Escape:
+            self.set_file_interaction_enabled(True)
             self.popup.hide()
             event.accept()
         else:
@@ -60,6 +65,7 @@ class IDEComboBox(QComboBox):
             popup_top_left = self.popup.mapToGlobal(popup_rect.topLeft())
             popup_rect_global = popup_rect.translated(popup_top_left)
             if not popup_rect_global.contains(global_click_pos):
+                self.set_file_interaction_enabled(True)
                 self.popup.hide()
                 widget = QApplication.widgetAt(global_click_pos)
                 if isinstance(widget, (QPushButton, QTabBar, QPlainTextEdit, QSplitterHandle)):

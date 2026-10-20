@@ -8,10 +8,11 @@ from ev3_ide.core.resources import resource_path
 class RightClickMenu(QFrame):
     closed = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, set_file_interaction_enabled, parent=None):
         super().__init__(parent)
 
         self.data = dict()
+        self.set_file_interaction_enabled = set_file_interaction_enabled
 
         # Separator
         self.separator_container_1 = QFrame()
@@ -154,6 +155,7 @@ class RightClickMenu(QFrame):
         self.show()
 
     def close_menu(self):
+        self.set_file_interaction_enabled(True)
         self.hide()
         self.closed.emit()
 
