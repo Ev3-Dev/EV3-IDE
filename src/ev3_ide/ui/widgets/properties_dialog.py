@@ -1,58 +1,10 @@
-from PySide6.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QRect, QParallelAnimationGroup
-from PySide6.QtWidgets import QApplication, QDialog, QFrame, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QWidget, QGridLayout
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QWidget, QGridLayout
 from datetime import datetime
 import stat
 import ctypes
 
-from ev3_ide.core.resources import resource_path
-
-
-class TitleBar(QFrame):
-    def __init__(self, title, icon_name, parent=None):
-        super().__init__(parent)
-
-        self.setObjectName("title_bar")
-
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(6, 0, 0, 0)
-        layout.setSpacing(8)
-
-        self.icon_label = QLabel()
-        icon = QIcon(resource_path(f"ui/icons/{icon_name}.svg"))
-        pixmap = icon.pixmap(20, 20)
-        self.icon_label.setPixmap(pixmap)
-
-        self.title_label = QLabel(title)
-        self.title_label.setObjectName("title_label")
-
-        self.close_button = QPushButton()
-        self.close_button.setObjectName("close_button")
-        self.close_button.setFixedSize(QSize(35, 35))
-        self.close_button.setIcon(QIcon(resource_path("ui/icons/window_close.svg")))
-        self.close_button.setIconSize(QSize(16, 16))
-        self.close_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.close_button.clicked.connect(self._close_window)
-
-        layout.addWidget(self.icon_label)
-        layout.addWidget(self.title_label)
-        layout.addStretch()
-        layout.addWidget(self.close_button)
-
-    def _close_window(self):
-        self.window().close()
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            window_handle = self.window().windowHandle()
-            if window_handle is not None:
-                window_handle.startSystemMove()
-                event.accept()
-                return
-        super().mousePressEvent(event)
-
-    def mouseDoubleClickEvent(self, event):
-        event.accept()
+from ev3_ide.ui.widgets.dialog_title_bar import TitleBar
 
 
 class PropertiesDialog(QDialog):
@@ -82,7 +34,7 @@ class PropertiesDialog(QDialog):
         content.setObjectName("content")
 
         content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(18, 18, 18, 14)
+        content_layout.setContentsMargins(14, 12, 14, 12)
         content_layout.setSpacing(16)
 
         heading = QLabel(self.file_data.get("name", "Unknown"))
@@ -124,7 +76,7 @@ class PropertiesDialog(QDialog):
         button_layout.addStretch()
 
         close_button = QPushButton("Close")
-        close_button.setObjectName("dialog_close_button")
+        close_button.setObjectName("dialog_button")
         close_button.clicked.connect(self.close)
 
         button_layout.addWidget(close_button)

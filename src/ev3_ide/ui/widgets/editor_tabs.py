@@ -5,6 +5,7 @@ import posixpath
 
 from ev3_ide.ui.widgets.code_editor import CodeEditor
 from ev3_ide.core.resources import resource_path
+from ev3_ide.ui.widgets.save_changes_dialog import SaveChangesDialog
 
 
 class EditorTab(QWidget):
@@ -193,13 +194,15 @@ class EditorTabs(QTabWidget):
         if not tab.modified:
             self._close_tab(index)
             return
-        result = QMessageBox.question(self, "Unsaved Changes", f"The file “{tab.name}” has been modified.\nDo you want to save your changes?", QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel)
-        if result == QMessageBox.StandardButton.Cancel:
+        dialog = SaveChangesDialog(tab.name, self)
+        dialog.exec()
+        result = dialog.get_result()
+        if result == "cancel":
             return
-        if result == QMessageBox.StandardButton.Discard:
+        if result == "discard":
             self._close_tab(index)
             return
-        if result == QMessageBox.StandardButton.Save:
+        if result == "save":
             tab.save_in_progress = True
             self.pending_close_path = tab.path
             self.save_requested.emit(tab.path, tab.editor.toPlainText())

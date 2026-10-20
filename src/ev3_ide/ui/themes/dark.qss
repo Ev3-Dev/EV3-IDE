@@ -428,7 +428,7 @@ QWidget#content {
 
 QLabel#file_name {
     color: #FFFFFF;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
 }
 
@@ -442,24 +442,27 @@ QLabel#property_value {
     font-size: 12px;
 }
 
-QPushButton#dialog_close_button {
+QPushButton#dialog_button {
     background-color: #333333;
     color: #d4d4d4;
     border: 0px solid #454545;
     border-radius: 4px;
-    padding: 5px 20px;
+    min-height: 25px;
+    max-height: 25px;
+    min-width: 70px;
+    max-width: 70px;
 }
 
-QPushButton#dialog_close_button:focus {
+QPushButton#dialog_button:focus {
     outline: none;
     border: 1px solid #0078d4;
 }
 
-QPushButton#dialog_close_button:hover {
+QPushButton#dialog_button:hover {
     background-color: #414141;
 }
 
-QLabel#confirm_message {
+QLabel#dialog_message {
     color: #d4d4d4;
     font-size: 12px;
 }

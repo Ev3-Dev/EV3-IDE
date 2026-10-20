@@ -120,7 +120,7 @@ class FilesWidget(QWidget):
     def confirm_delete(self, name, is_file):
         item_type = "file" if is_file else "directory"
         extra_text = " and all of its contents" if not is_file else ""
-        dialog = ConfirmDialog(title="Confirm Deletion", message=f"Do you really want to delete the {item_type}\n'{name}'{extra_text}?", parent=self, confirm_text="Delete", cancel_text="Cancel",)
+        dialog = ConfirmDialog(title="Confirm Deletion", message=f"Do you really want to delete the {item_type} '{name}'{extra_text}?", parent=self, confirm_text="Delete", cancel_text="Cancel",)
         return dialog.exec() == QDialog.DialogCode.Accepted
 
     def delete_from_menu(self):

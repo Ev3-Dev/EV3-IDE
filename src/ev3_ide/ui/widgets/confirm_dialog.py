@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
 import ctypes
 
-from ev3_ide.ui.widgets.properties_dialog import TitleBar
+from ev3_ide.ui.widgets.dialog_title_bar import TitleBar
 
 
 class ConfirmDialog(QDialog):
@@ -28,11 +28,11 @@ class ConfirmDialog(QDialog):
         content = QWidget()
         content.setObjectName("content")
         content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(14, 10, 10, 10)
+        content_layout.setContentsMargins(14, 12, 14, 12)
         content_layout.setSpacing(16)
 
         message_label = QLabel(message)
-        message_label.setObjectName("confirm_message")
+        message_label.setObjectName("dialog_message")
         message_label.setWordWrap(True)
         content_layout.addWidget(message_label)
         content_layout.addStretch()
@@ -44,11 +44,11 @@ class ConfirmDialog(QDialog):
         button_layout.addStretch()
 
         self.confirm_button = QPushButton(confirm_text)
-        self.confirm_button.setObjectName("dialog_close_button")
+        self.confirm_button.setObjectName("dialog_button")
         self.confirm_button.clicked.connect(self.accept)
 
         self.cancel_button = QPushButton(cancel_text)
-        self.cancel_button.setObjectName("dialog_close_button")
+        self.cancel_button.setObjectName("dialog_button")
         self.cancel_button.clicked.connect(self.reject)
 
         button_layout.addWidget(self.confirm_button)
