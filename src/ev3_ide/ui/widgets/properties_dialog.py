@@ -39,6 +39,7 @@ class PropertiesDialog(QDialog):
 
         heading = QLabel(self.file_data.get("name", "Unknown"))
         heading.setObjectName("file_name")
+        heading.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
         content_layout.addWidget(heading)
 

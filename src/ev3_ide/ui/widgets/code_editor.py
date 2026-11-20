@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
-from PySide6.QtGui import QFont, QFontDatabase, QPainter, QColor, QTextFormat
+from PySide6.QtGui import QFont, QFontDatabase, QPainter, QColor, QTextFormat, QTextCursor
 from PySide6.QtCore import Qt, QSize, QTimer
 from pathlib import Path
 
@@ -26,6 +26,8 @@ class LineNumberArea(QWidget):
 class CodeEditor(QPlainTextEdit):
     _font_id = None
     _font_family = None
+
+    PAIRS = {"(": ")", "[": "]", "{": "}", '"': '"', "'": "'"}
 
     def __init__(self, path, parent=None):
         super().__init__(parent)
@@ -173,4 +175,63 @@ class CodeEditor(QPlainTextEdit):
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
             self.insertPlainText("\n")
             return
+
+        cursor = self.textCursor()
+
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            # Aktuelle Zeile ermitteln
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+            line = cursor.block().text()
+            # Einrückung der aktuellen Zeile übernehmen
+            indentation = ""
+            for char in line:
+                if char in (" ", "\t"):
+                    indentation += char
+                else:
+                    break
+            # Text vor und nach dem Cursor
+            current_cursor = self.textCursor()
+            position = current_cursor.positionInBlock()
+            text_before = line[:position]
+            text_after = line[position:]
+            # Prüfen, ob der Cursor zwischen { und } steht
+            if text_before.rstrip().endswith("{") and text_after.lstrip().startswith("}"):
+                cursor = self.textCursor()
+                cursor.insertText("\n" + indentation + "    " + "\n" + indentation)
+                # Cursor in die eingerückte Zeile setzen
+                cursor.movePosition(QTextCursor.MoveOperation.Up)
+                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+                self.setTextCursor(cursor)
+                return
+            # Normale Einrückung übernehmen
+            self.textCursor().insertText("\n" + indentation)
+            return
+
+        if event.key() == Qt.Key.Key_Backspace and not cursor.hasSelection():
+            position = cursor.position()
+            text = self.toPlainText()
+            if 0 < position < len(text):
+                char_before = text[position - 1]
+                char_after = text[position]
+                if self.PAIRS.get(char_before) == char_after:
+                    cursor.movePosition(QTextCursor.MoveOperation.Left)
+                    cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, 2)
+                    cursor.removeSelectedText()
+                    return
+
+        char = event.text()
+        if char in self.PAIRS:
+            closing = self.PAIRS[char]
+            # Falls Text markiert ist, diesen einklammern
+            if cursor.hasSelection():
+                selected_text = cursor.selectedText()
+                cursor.insertText(char + selected_text + closing)
+                return
+            # Öffnendes und schließendes Zeichen einfügen
+            cursor.insertText(char + closing)
+            # Cursor zwischen die beiden Zeichen setzen
+            cursor.movePosition(QTextCursor.MoveOperation.Left)
+            self.setTextCursor(cursor)
+            return
+
         super().keyPressEvent(event)
