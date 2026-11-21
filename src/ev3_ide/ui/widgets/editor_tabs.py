@@ -29,13 +29,13 @@ class EditorTab(QWidget):
         self.editor = CodeEditor(self.path)
         self.editor.setPlainText(self.content)
         self.editor.setReadOnly(not self.editable)
-        self.editor.textChanged.connect(self.on_text_changed)
+        self.editor.modificationChanged.connect(self.on_modification_changed)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.editor)
 
-    def on_text_changed(self):
+    def on_modification_changed(self):
         if not self.modified:
             self.modified = True
             self.mark_unsaved.emit()
@@ -181,6 +181,26 @@ class EditorTabs(QTabWidget):
             # Tab-Titel aktualisieren, ohne den Unsaved-Status zu verlieren
             title = f"{tab.name} *" if tab.modified else tab.name
             self.setTabText(index, title)
+
+    def can_close_all_tabs(self):
+        for index in range(self.count()):
+            tab = self.widget(index)
+            if not isinstance(tab, EditorTab):
+                continue
+            if not tab.modified:
+                continue
+            if tab.save_in_progress:
+                continue
+            dialog = SaveChangesDialog(tab.name, self)
+            dialog.exec()
+            result = dialog.get_result()
+            if result == "cancel":
+                return False
+            if result == "discard":
+                continue
+            if result == "save":
+                return False
+        return True
 
     def close_tab(self, index):
         if self.pending_close_path is not None:

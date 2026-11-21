@@ -378,4 +378,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         self.ev3_handler.stop()
-        event.accept()
+        if self.editor_tabs.can_close_all_tabs():
+            event.accept()
+        else:
+            event.ignore()
