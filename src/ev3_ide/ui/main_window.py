@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
     def __init__(self, app, theme_manager):
         super().__init__()
         self.setObjectName("main_window")
-        self.setMinimumSize(650, 450)
+        self.setMinimumSize(700, 450)
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -157,6 +157,7 @@ class MainWindow(QMainWindow):
         self.left_sidebar.delete_file_requested.connect(self.handle_delete_file)
         self.left_sidebar.delete_directory_requested.connect(self.handle_delete_directory)
         self.left_sidebar.rename_requested.connect(self.handle_rename)
+        self.left_sidebar.run_requested.connect(self.run_file)
 
         # Shortcuts
         self.title_bar.run_requested.connect(self.run_current_file)
@@ -173,6 +174,11 @@ class MainWindow(QMainWindow):
             return
         run_mode = "python" if tab.path.lower().endswith(".py") else "execute"
         self.ev3_handler.run_file(tab.path, run_mode)
+
+    def run_file(self, path):
+        if not path.endswith(".py"):
+            return
+        self.ev3_handler.run_file(path, "python")
 
     def save_current_file(self):
         tab = self.editor_tabs.current_tab()

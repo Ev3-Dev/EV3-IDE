@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
-from PySide6.QtGui import QFont, QFontDatabase, QPainter, QColor, QTextFormat, QTextCursor
+from PySide6.QtGui import QFont, QFontDatabase, QPainter, QColor, QTextFormat, QTextCursor, QTextCharFormat
 from PySide6.QtCore import Qt, QSize, QTimer
 from pathlib import Path
 
@@ -62,6 +62,11 @@ class CodeEditor(QPlainTextEdit):
         self.timer.setInterval(8)
         self.timer.timeout.connect(self.physics_tick)
         self.verticalScrollBar().valueChanged.connect(self.sync_on_manual_scroll)
+
+        self.bracket_format = QTextCharFormat()
+        self.bracket_format.setBackground(QColor("#454545"))
+        self.bracket_format.setForeground(QColor("#ffffff"))
+        # self.cursorPositionChanged.connect(self.highlight_brackets)
 
     def set_path(self, new_path):
         self.path = new_path
@@ -170,6 +175,51 @@ class CodeEditor(QPlainTextEdit):
             self.precise_value = float(scrollbar.maximum())
             self.velocity = 0.0
         scrollbar.setValue(int(round(self.precise_value)))
+
+    def highlight_brackets(self):
+        doc = self.document()
+        pos = self.textCursor().position()
+        doc_len = doc.characterCount()
+        brackets = {"(": ")", "[": "]", "{": "}"}
+        reverse_brackets = {")": "(", "]": "[", "}": "{"}
+        target_pos = -1
+        for candidate in (pos - 1, pos):
+            if 0 <= candidate < doc_len:
+                ch = doc.characterAt(candidate)
+                if ch in brackets or ch in reverse_brackets:
+                    target_pos = candidate
+                    break
+        if target_pos == -1:
+            self.setExtraSelections([])
+            return
+        char = doc.characterAt(target_pos)
+        if char in brackets:
+            opening, closing, step = char, brackets[char], 1
+            limit = min(doc_len, target_pos + 5000)
+        else:
+            opening, closing, step = reverse_brackets[char], char, -1
+            limit = max(-1, target_pos - 5000)
+        depth = 0
+        match_position = -1
+        for i in range(target_pos, limit, step):
+            c = doc.characterAt(i)
+            if c == opening:
+                depth += step
+            elif c == closing:
+                depth -= step
+            if depth == 0:
+                match_position = i
+                break
+        selections = []
+        if match_position != -1:
+            for bracket_pos in (target_pos, match_position):
+                selection = QTextEdit.ExtraSelection()
+                selection.format = self.bracket_format
+                selection.cursor = QTextCursor(doc)
+                selection.cursor.setPosition(bracket_pos)
+                selection.cursor.movePosition(QTextCursor.MoveOperation.NextCharacter, QTextCursor.MoveMode.KeepAnchor,)
+                selections.append(selection)
+        self.setExtraSelections(selections)
 
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and event.modifiers() & Qt.KeyboardModifier.ShiftModifier:

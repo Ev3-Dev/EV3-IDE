@@ -53,23 +53,30 @@ class IDETitleBar(QWidget):
         self.menu_button.setIconSize(QSize(22, 22))
         self.menu_button.setIcon(QIcon(resource_path("ui/icons/menu.svg")))
 
-        self.run_button = QPushButton("Run")
-        self.run_button.setObjectName("run_button")
-        self.run_button.setFixedSize(90, 30)
-        self.run_button.setIconSize(QSize(18, 18))
-        self.run_button.setIcon(QIcon(resource_path("ui/icons/run.svg")))
-
         self.save_button = QPushButton(" Save")
         self.save_button.setObjectName("save_button")
         self.save_button.setFixedSize(90, 30)
         self.save_button.setIconSize(QSize(16, 16))
         self.save_button.setIcon(QIcon(resource_path("ui/icons/save.svg")))
 
+        self.run_button = QPushButton("Run")
+        self.run_button.setObjectName("run_button")
+        self.run_button.setFixedSize(90, 30)
+        self.run_button.setIconSize(QSize(18, 18))
+        self.run_button.setIcon(QIcon(resource_path("ui/icons/run.svg")))
+
+        self.compile_button = QPushButton("Compile ")
+        self.compile_button.setObjectName("compile_button")
+        self.compile_button.setFixedSize(90, 30)
+        self.compile_button.setIconSize(QSize(20, 20))
+        self.compile_button.setIcon(QIcon(resource_path("ui/icons/compile.svg")))
+
         toolbar_buttons_layout = QHBoxLayout()
         toolbar_buttons_layout.setContentsMargins(0, 0, 0, 0)
         toolbar_buttons_layout.setSpacing(5)
-        toolbar_buttons_layout.addWidget(self.run_button)
         toolbar_buttons_layout.addWidget(self.save_button)
+        toolbar_buttons_layout.addWidget(self.run_button)
+        toolbar_buttons_layout.addWidget(self.compile_button)
 
         # EV3-Layout
         self.ev3_connection_label = QLabel("• Disconnected")
@@ -133,13 +140,14 @@ class IDETitleBar(QWidget):
         self.ev3_frame.installEventFilter(self)
 
         # Shortcuts
-        self.run_button.clicked.connect(self.run_requested)
         self.save_action = QShortcut(QKeySequence("Ctrl+S"), self)
         self.save_action.activated.connect(self.save_requested)
         self.save_button.clicked.connect(self.save_requested)
+        self.run_button.clicked.connect(self.run_requested)
 
-        self.run_button.setEnabled(False)
         self.save_button.setEnabled(False)
+        self.run_button.setEnabled(False)
+        self.compile_button.setEnabled(False)
 
     def set_connection_state(self, state):
         if state != self.ev3_state:
@@ -189,12 +197,15 @@ class IDETitleBar(QWidget):
 
     def update_toolbar(self, tab):
         if tab is None:
-            self.run_button.setEnabled(False)
             self.save_button.setEnabled(False)
+            self.run_button.setEnabled(False)
+            self.compile_button.setEnabled(False)
             return
         self.save_button.setEnabled(tab.editable)
         is_python = tab.path.lower().endswith(".py")
         self.run_button.setEnabled(is_python or tab.executable)
+        is_cpp = tab.path.lower().endswith(".cpp")
+        self.compile_button.setEnabled(is_cpp)
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         if watched is self.ev3_frame and event.type() == QEvent.Type.MouseButtonPress:

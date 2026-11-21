@@ -17,6 +17,7 @@ class LeftSidebar(QFrame):
     delete_file_requested = Signal(str)
     delete_directory_requested = Signal(str)
     rename_requested = Signal(str, str, str, str)
+    run_requested = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -77,6 +78,7 @@ class LeftSidebar(QFrame):
         self.files_widget.delete_file_requested.connect(self.delete_file_requested)
         self.files_widget.delete_directory_requested.connect(self.delete_directory_requested)
         self.files_widget.rename_requested.connect(self.rename_requested)
+        self.files_widget.run_requested.connect(self.run_requested)
 
     def update_directory(self, entries):
         self.files_widget.update_directory(entries)

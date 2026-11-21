@@ -24,18 +24,18 @@ QPushButton#toolbar_menu_button:hover {
     background-color: #3c444a;
 }
 
-QPushButton#run_button, QPushButton#save_button {
+QPushButton#save_button, QPushButton#run_button, QPushButton#compile_button {
     border: 1px solid #3c444a;
     border-radius: 5px;
     color: #d4d4d4;
     background-color: #304f60;
 }
 
-QPushButton#run_button:hover, QPushButton#save_button:hover {
+QPushButton#save_button:hover, QPushButton#run_button:hover, QPushButton#compile_button:hover {
     background-color: #315f7a;
 }
 
-QPushButton#run_button:disabled, QPushButton#save_button:disabled {
+QPushButton#save_button:disabled, QPushButton#run_button:disabled, QPushButton#compile_button:disabled {
     color: gray;
     background-color: #2d3033;
 }

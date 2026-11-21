@@ -41,6 +41,7 @@ class FilesWidget(QWidget):
     delete_file_requested = Signal(str)
     delete_directory_requested = Signal(str)
     rename_requested = Signal(str, str, str, str)
+    run_requested = Signal(str)
 
     def __init__(self, parent=None, overlay_parent=None):
         super().__init__(parent)
@@ -52,6 +53,7 @@ class FilesWidget(QWidget):
 
         self.right_click_menu = RightClickMenu(self.set_file_interaction_enabled, overlay_parent)
         self.right_click_menu.open_button.clicked.connect(self.open_from_menu)
+        self.right_click_menu.run_button.clicked.connect(self.run_from_menu)
         self.right_click_menu.delete_button.clicked.connect(self.delete_from_menu)
         self.right_click_menu.closed.connect(self.clear_selected_item)
         self.right_click_menu.rename_button.clicked.connect(self.rename_from_menu)
@@ -116,6 +118,11 @@ class FilesWidget(QWidget):
         data = self.right_click_menu.data
         self.right_click_menu.close_menu()
         self.item_clicked.emit(data)
+
+    def run_from_menu(self):
+        data = self.right_click_menu.data
+        self.right_click_menu.close_menu()
+        self.run_requested.emit(data["path"])
 
     def confirm_delete(self, name, is_file):
         item_type = "file" if is_file else "directory"
