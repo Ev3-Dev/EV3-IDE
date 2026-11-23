@@ -143,6 +143,7 @@ class MainWindow(QMainWindow):
         self.ev3_handler.file_deleted.connect(self.handle_file_deleted)
         self.ev3_handler.directory_deleted.connect(self.handle_directory_deleted)
         self.ev3_handler.renamed.connect(self.handle_renamed)
+        self.ev3_handler.compiler_output.connect(self.bottom_tabs.console.process_compiler_output)
 
         self.editor_tabs.save_requested.connect(self.ev3_handler.save_file)
         self.editor_tabs.currentChanged.connect(self.update_toolbar)
@@ -158,10 +159,12 @@ class MainWindow(QMainWindow):
         self.left_sidebar.delete_directory_requested.connect(self.handle_delete_directory)
         self.left_sidebar.rename_requested.connect(self.handle_rename)
         self.left_sidebar.run_requested.connect(self.run_file)
+        self.left_sidebar.compile_requested.connect(self.compile_path)
 
         # Shortcuts
         self.title_bar.run_requested.connect(self.run_current_file)
         self.title_bar.save_requested.connect(self.save_current_file)
+        self.title_bar.compile_requested.connect(self.compile_current_file)
 
     # Shortcut-Funktionen
     def run_current_file(self):
@@ -190,6 +193,20 @@ class MainWindow(QMainWindow):
             return
         tab.save_in_progress = True
         self.ev3_handler.save_file(tab.path, tab.editor.toPlainText())
+
+    def compile_path(self, path):
+        self.bottom_tabs.console.clear()
+        self.ev3_handler.compile_file(path)
+
+    def compile_current_file(self):
+        self.bottom_tabs.console.clear()
+        tab = self.editor_tabs.current_tab()
+        if tab is None:
+            return
+        if tab.save_in_progress:
+            return
+        self.save_current_file()
+        self.ev3_handler.compile_file(tab.path)
 
     # Code-Editor-Logik
     def handle_left_clicked(self, data):

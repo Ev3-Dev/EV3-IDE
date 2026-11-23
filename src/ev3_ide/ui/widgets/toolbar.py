@@ -9,6 +9,7 @@ from ev3_ide.ui.widgets.battery_popup import BatteryPopup
 class IDETitleBar(QWidget):
     run_requested = Signal()
     save_requested = Signal()
+    compile_requested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -144,6 +145,7 @@ class IDETitleBar(QWidget):
         self.save_action.activated.connect(self.save_requested)
         self.save_button.clicked.connect(self.save_requested)
         self.run_button.clicked.connect(self.run_requested)
+        self.compile_button.clicked.connect(self.compile_requested)
 
         self.save_button.setEnabled(False)
         self.run_button.setEnabled(False)

@@ -55,6 +55,19 @@ class Console(QPlainTextEdit):
         self.setTextCursor(cursor)
         self.ensureCursorVisible()
 
+    def process_compiler_output(self, data):
+        self.clear()
+        if data["success"] and data["returncode"] == 0:
+            if data["stdout"]:
+                self.append_line(text=f"Compilation successful:\n{data["stdout"]}", kind="success")
+            else:
+                self.append_line(text="Compilation successful", kind="success")
+        elif not data["success"] or data["returncode"] != 0:
+            if data["stderr"]:
+                self.append_line(text=f"Compilation failed (return code {data["returncode"]}):\n{data["stderr"]}", kind="error")
+            else:
+                self.append_line(text=f"Compilation failed (return code {data["returncode"]})", kind="error")
+
     # -------- Scrollen --------
     def sync_on_manual_scroll(self, value):
         if not self.timer.isActive():

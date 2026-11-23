@@ -29,7 +29,7 @@ class EditorTab(QWidget):
         self.editor = CodeEditor(self.path)
         self.editor.setPlainText(self.content)
         self.editor.setReadOnly(not self.editable)
-        self.editor.modificationChanged.connect(self.on_modification_changed)
+        self.editor.textChanged.connect(self.on_modification_changed)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)

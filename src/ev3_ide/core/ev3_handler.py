@@ -4,9 +4,24 @@ import stat
 import posixpath
 import queue
 import time
+import subprocess
+import tempfile
+import os
 from PySide6.QtCore import QObject, Signal
 
 from ev3_ide.core.ev3_paths import PROTECTED_PATHS, PROTECTED_FILES
+from ev3_ide.core.resources import resource_path
+
+
+class Compiler:
+    def compile(self, source_path, output_path):
+        command = [resource_path("core/compiler/arm-toolchain/bin/arm-none-linux-gnueabi-g++.exe"), source_path, "-o", output_path]
+        # command = ["C:/Program Files (x86)/CodeSourcery/Sourcery G++ Lite/bin/arm-none-linux-gnueabi-g++.exe", source_path, "-o", output_path]
+        try:
+            result = subprocess.run(command, capture_output=True, text=True)
+            return {"success": result.returncode == 0, "stdout": result.stdout, "stderr": result.stderr, "returncode": result.returncode}
+        except Exception as e:
+            return {"success": False, "stdout": "", "stderr": str(e), "returncode": -1}
 
 
 class SFTPWorker(QObject):
@@ -24,10 +39,13 @@ class SFTPWorker(QObject):
     process_finished = Signal(int)
     notification = Signal(dict)
 
+    compiler_output = Signal(dict)
+
     def __init__(self, sftp):
         super().__init__()
         self.sftp = sftp
         self.queue = queue.Queue()
+        self.compiler = Compiler()
         self.stop_event = threading.Event()
         self.current_path = "/home/robot"
 
@@ -295,6 +313,27 @@ class SFTPWorker(QObject):
         except Exception as e:
             self.notification.emit({"type": "error", "title": "Cannot rename", "message": f"Cannot rename '{old_name}' to '{new_name}': {e}"})
 
+    def compile_file(self, remote_source_path):
+        if not self.is_connected():
+            return
+        try:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                filename = posixpath.basename(remote_source_path)
+                local_source_path = os.path.join(temp_dir, filename)
+                local_output_path = os.path.join(temp_dir, os.path.splitext(filename)[0])
+                self.sftp.get(remote_source_path, local_source_path)
+                result = self.compiler.compile(local_source_path, local_output_path)
+                self.compiler_output.emit(result)
+                if not result["success"]:
+                    return
+                remote_output_path = remote_source_path + ".out"
+                self.sftp.put(local_output_path, remote_output_path)
+                self.sftp.chmod(remote_output_path, 0o755)
+                self.list_dir(posixpath.dirname(remote_output_path))
+                # self.compiler_output.emit({"success": True, "message": f"Successfully compiled and uploaded: {remote_output_path}", "output_path": remote_output_path})
+        except Exception as e:
+            self.notification.emit({"type": "error", "title": "Compilation failed", "message": str(e)})
+
 
 class EV3Handler(QObject):
     ev3_connected = Signal()
@@ -311,6 +350,8 @@ class EV3Handler(QObject):
     output_received = Signal(str)
     process_finished = Signal(int)
     notification = Signal(dict)
+
+    compiler_output = Signal(dict)
 
     def __init__(self):
         super().__init__()
@@ -368,6 +409,7 @@ class EV3Handler(QObject):
         self._worker.file_deleted.connect(self.file_deleted)
         self._worker.directory_deleted.connect(self.directory_deleted)
         self._worker.renamed.connect(self.renamed)
+        self._worker.compiler_output.connect(self.compiler_output)
 
         self._worker_thread = threading.Thread(target=self._worker.run, daemon=True)
 
@@ -427,6 +469,11 @@ class EV3Handler(QObject):
         if self._worker is None:
             return
         self._worker.enqueue(self._worker.rename, old_path, new_path, old_name, new_name)
+
+    def compile_file(self, path):
+        if self._worker is None:
+            return
+        self._worker.enqueue(self._worker.compile_file, path)
 
     def run_file(self, path, run_mode):
         if self._worker is None:
