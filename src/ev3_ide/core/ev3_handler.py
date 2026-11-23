@@ -323,6 +323,10 @@ class SFTPWorker(QObject):
                 local_output_path = os.path.join(temp_dir, os.path.splitext(filename)[0])
                 self.sftp.get(remote_source_path, local_source_path)
                 result = self.compiler.compile(local_source_path, local_output_path)
+                if result["stderr"]:
+                    result["stderr"] = result["stderr"].replace(local_source_path, filename)
+                if result["stdout"]:
+                    result["stdout"] = result["stdout"].replace(local_source_path, filename)
                 self.compiler_output.emit(result)
                 if not result["success"]:
                     return
@@ -330,7 +334,6 @@ class SFTPWorker(QObject):
                 self.sftp.put(local_output_path, remote_output_path)
                 self.sftp.chmod(remote_output_path, 0o755)
                 self.list_dir(posixpath.dirname(remote_output_path))
-                # self.compiler_output.emit({"success": True, "message": f"Successfully compiled and uploaded: {remote_output_path}", "output_path": remote_output_path})
         except Exception as e:
             self.notification.emit({"type": "error", "title": "Compilation failed", "message": str(e)})
 
