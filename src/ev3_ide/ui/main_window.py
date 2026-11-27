@@ -263,12 +263,22 @@ class MainWindow(QMainWindow):
 
     def handle_start_output(self):
         self.bottom_tabs.console.clear()
+        self.title_bar.run_button.setEnabled(False)
+        self.title_bar.run_button.setText("Running ...")
+        self.title_bar.run_button.setFixedSize(110, 30)
+        self.left_sidebar.files_widget.right_click_menu.run_button.setEnabled(False)
 
     def handle_output(self, output):
         self.bottom_tabs.console.append_line(output, "output")
 
     def handle_process_finished(self, exit_code):
         self.bottom_tabs.console.append_line(f"\nProcess finished with exit code {exit_code}", "success" if exit_code == 0 else "error")
+        if self.editor_tabs.get_opened_paths():
+            tab = self.editor_tabs.current_tab()
+            self.title_bar.update_toolbar(tab)
+        self.title_bar.run_button.setText("Run")
+        self.title_bar.run_button.setFixedSize(90, 30)
+        self.left_sidebar.files_widget.right_click_menu.run_button.setEnabled(True)
 
     def update_toolbar(self):
         tab = self.editor_tabs.current_tab()

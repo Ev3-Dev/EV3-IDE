@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, QEvent, Signal, QSize
 from PySide6.QtWidgets import QApplication, QFrame, QVBoxLayout, QPushButton, QTabBar, QPlainTextEdit, QSplitterHandle
-from PySide6.QtGui import QIcon, QShortcut, QKeySequence
+from PySide6.QtGui import QIcon, QPixmap, QShortcut, QKeySequence
 
 from ev3_ide.core.resources import resource_path
 
@@ -47,8 +47,10 @@ class RightClickMenu(QFrame):
         self.run_button = QPushButton(" Run")
         self.run_button.setObjectName("combo_item")
         self.run_button.setFixedHeight(26)
-        run_icon = QIcon(resource_path("ui/icons/run-right-click.svg"))
-        self.run_button.setIcon(run_icon)
+        self.run_icon = QIcon()
+        self.run_icon.addPixmap(QPixmap(resource_path("ui/icons/run-right-click.svg")), QIcon.Mode.Normal, QIcon.State.Off)
+        self.run_icon.addPixmap(QPixmap(resource_path("ui/icons/run-right-click-disabled.svg")), QIcon.Mode.Disabled, QIcon.State.Off)
+        self.run_button.setIcon(self.run_icon)
         self.run_button.setIconSize(QSize(20, 20))
 
         # Compile

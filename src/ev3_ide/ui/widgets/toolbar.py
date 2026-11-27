@@ -10,6 +10,7 @@ class IDETitleBar(QWidget):
     run_requested = Signal()
     save_requested = Signal()
     compile_requested = Signal()
+    stop_requested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -208,6 +209,9 @@ class IDETitleBar(QWidget):
         self.run_button.setEnabled(is_python or tab.executable)
         is_cpp = tab.path.lower().endswith(".cpp")
         self.compile_button.setEnabled(is_cpp)
+
+    def switch_to_stop_button(self):
+        pass
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         if watched is self.ev3_frame and event.type() == QEvent.Type.MouseButtonPress:

@@ -281,6 +281,11 @@ QPushButton#combo_item:pressed {
     background-color: #484b4e;
 }
 
+QPushButton#combo_item:disabled {
+    background-color: #2e2f30;
+    color: gray;
+}
+
 QFrame#context_separator {
     background-color: #404040;
 }
