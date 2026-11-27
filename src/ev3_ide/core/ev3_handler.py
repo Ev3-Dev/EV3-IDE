@@ -7,10 +7,107 @@ import time
 import subprocess
 import tempfile
 import os
+import shlex
 from PySide6.QtCore import QObject, Signal
 
 from ev3_ide.core.ev3_paths import PROTECTED_PATHS, PROTECTED_FILES
 from ev3_ide.core.resources import resource_path
+
+
+class ProcessWorker(QObject):
+    start_output = Signal()
+    output_received = Signal(str)
+    process_finished = Signal(int)
+    notification = Signal(dict)
+
+    def __init__(self, ssh):
+        super().__init__()
+        self.ssh = ssh
+        self.transport = ssh.get_transport()
+        self.queue = queue.Queue()
+        self.stop_event = threading.Event()
+        self.channel = None
+        self._stop_requested = False
+    def start_process(self, remote_path):
+        self.queue.put(("start", remote_path))
+    def stop_process(self):
+        self.queue.put(("stop", None))
+    def stop(self):
+        self.stop_event.set()
+    def run(self):
+        while not self.stop_event.is_set():
+            try:
+                task, data = self.queue.get(timeout=0.05)
+                if task == "start":
+                    self._start_process(data)
+                elif task == "stop":
+                    self._stop_process()
+            except queue.Empty:
+                pass
+            self._check_output()
+        self._stop_process()
+        if self.channel:
+            self.channel.close()
+            self.channel = None
+    def _start_process(self, remote_path):
+        if self.channel and not self.channel.exit_status_ready():
+            self.notification.emit({"type": "error", "title": "Cannot run", "message": "Another program is already running"})
+            return
+        try:
+            if not self.transport or not self.transport.is_active():
+                self.notification.emit({"type": "error", "title": "Cannot run", "message": "Lost connection to EV3"})
+                return
+            self.channel = self.transport.open_session()
+            command = f"exec {shlex.quote(remote_path)}"
+            self.channel.exec_command(command)
+            self._stop_requested = False
+            self.start_output.emit()
+        except Exception as e:
+            self.notification.emit({"type": "error", "title": "Cannot run", "message": f"Couldn't start program: {e}"})
+            self.channel = None
+    def _check_output(self):
+        if not self.channel:
+            return
+        try:
+            while self.channel.recv_ready():
+                data = self.channel.recv(4096)
+                if not data:
+                    break
+                self.output_received.emit(data.decode("utf-8", errors="replace"))
+            while self.channel.recv_stderr_ready():
+                data = self.channel.recv_stderr(4096)
+                if not data:
+                    break
+                self.output_received.emit(data.decode("utf-8", errors="replace"))
+            if self.channel.exit_status_ready():
+                exit_code = self.channel.recv_exit_status()
+                while self.channel.recv_ready():
+                    data = self.channel.recv(4096)
+                    if data:
+                        self.output_received.emit(data.decode("utf-8", errors="replace"))
+                while self.channel.recv_stderr_ready():
+                    data = self.channel.recv_stderr(4096)
+                    if data:
+                        self.output_received.emit(data.decode("utf-8", errors="replace"))
+                self.channel.close()
+                self.channel = None
+                self.process_finished.emit(exit_code)
+        except Exception as e:
+            self.notification.emit({"type": "error", "title": "Execution error", "message": f"An error occurred during execution: {e}"})
+            if self.channel:
+                self.channel.close()
+                self.channel = None
+            self.process_finished.emit(-1)
+    def _stop_process(self):
+        if not self.channel:
+            return
+        if self.channel.exit_status_ready():
+            return
+        try:
+            self.channel.send_signal("TERM")
+            self.notification.emit({"type": "error", "title": "Cannot run", "message": "Programm wurde zum Beenden aufgefordert."})
+        except Exception as e:
+            self.notification.emit({"type": "error", "title": "Cannot run", "message": f"Programm konnte nicht beendet werden: {e}"})
 
 
 class Compiler:
@@ -350,6 +447,7 @@ class EV3Handler(QObject):
     directory_deleted = Signal(str)
     renamed = Signal(str, str)
 
+    start_output = Signal()
     output_received = Signal(str)
     process_finished = Signal(int)
     notification = Signal(dict)
@@ -365,6 +463,10 @@ class EV3Handler(QObject):
         self.session_thread = None
         self._worker = None
         self._worker_thread = None
+        self._process_worker = None
+        self._process_thread = None
+        self._terminal_worker = None
+        self._terminal_thread = None
         self._stop_event = threading.Event()
 
         self.ev3_username = "robot"
@@ -420,6 +522,15 @@ class EV3Handler(QObject):
 
         self.list_dir("/home/robot")
 
+        self._process_worker = ProcessWorker(self._ssh)
+
+        self._process_worker.start_output.connect(self.start_output)
+        self._process_worker.output_received.connect(self.output_received)
+        self._process_worker.process_finished.connect(self.process_finished)
+        self._process_worker.notification.connect(self.notification)
+
+        self._process_thread = threading.Thread(target=self._process_worker.run, daemon=True)
+        self._process_thread.start()
 
     # -------- Öffentliche API --------
     def list_dir(self, path):
@@ -482,6 +593,16 @@ class EV3Handler(QObject):
         if self._worker is None:
             return
         self._worker.enqueue(self._worker.run_file, path, run_mode)
+
+    def run_program(self, remote_path):
+        if not self._process_worker:
+            self.notification.emit("ProcessWorker ist nicht verfügbar.")
+            return
+        self._process_worker.start_process(remote_path)
+
+    def stop_program(self):
+        if self._process_worker:
+            self._process_worker.stop_process()
 
     def go_back(self):
         if self._worker is None:

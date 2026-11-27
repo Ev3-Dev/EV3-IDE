@@ -145,6 +145,10 @@ class MainWindow(QMainWindow):
         self.ev3_handler.renamed.connect(self.handle_renamed)
         self.ev3_handler.compiler_output.connect(self.bottom_tabs.console.process_compiler_output)
 
+        self.ev3_handler.start_output.connect(self.handle_start_output)
+        self.ev3_handler.output_received.connect(self.handle_output)
+        self.ev3_handler.process_finished.connect(self.handle_process_finished)
+
         self.editor_tabs.save_requested.connect(self.ev3_handler.save_file)
         self.editor_tabs.currentChanged.connect(self.update_toolbar)
 
@@ -158,7 +162,7 @@ class MainWindow(QMainWindow):
         self.left_sidebar.delete_file_requested.connect(self.handle_delete_file)
         self.left_sidebar.delete_directory_requested.connect(self.handle_delete_directory)
         self.left_sidebar.rename_requested.connect(self.handle_rename)
-        self.left_sidebar.run_requested.connect(self.run_file)
+        self.left_sidebar.run_requested.connect(self.run_program)
         self.left_sidebar.compile_requested.connect(self.compile_path)
 
         # Shortcuts
@@ -178,10 +182,8 @@ class MainWindow(QMainWindow):
         run_mode = "python" if tab.path.lower().endswith(".py") else "execute"
         self.ev3_handler.run_file(tab.path, run_mode)
 
-    def run_file(self, path):
-        if not path.endswith(".py"):
-            return
-        self.ev3_handler.run_file(path, "python")
+    def run_program(self, path):
+        self.ev3_handler.run_program(path)
 
     def save_current_file(self):
         tab = self.editor_tabs.current_tab()
@@ -258,6 +260,16 @@ class MainWindow(QMainWindow):
 
     def handle_notification(self, data):
         self.notification_manager.show(notification_type=data["type"], title=data["title"], message=data["message"])
+
+    def handle_start_output(self):
+        self.bottom_tabs.console.clear()
+        print("Programm gestartet")
+
+    def handle_output(self, output):
+        self.bottom_tabs.console.append_line(output, "output")
+
+    def handle_process_finished(self, exit_code):
+        self.bottom_tabs.console.append_line(f"Process finished with exit code {exit_code}", "success" if exit_code == 0 else "error")
 
     def update_toolbar(self):
         tab = self.editor_tabs.current_tab()

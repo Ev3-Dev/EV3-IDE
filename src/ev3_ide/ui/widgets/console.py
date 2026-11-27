@@ -41,12 +41,11 @@ class Console(QPlainTextEdit):
 
     def append_line(self, text: str, kind: str = "output"):
         colors = {
-            "output":  "#ffffff",
+            "output":  "#d4d4d4",
             "success": "#639922",
             "error":   "#e24b4a",
-            "info":    "#185FA5",
         }
-        color  = colors.get(kind, "#ffffff")
+        color  = colors.get(kind, "#d4d4d4")
         fmt    = QTextCharFormat()
         fmt.setForeground(QColor(color))
         cursor = self.textCursor()
