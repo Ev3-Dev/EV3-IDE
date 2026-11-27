@@ -20,6 +20,7 @@ class IDETitleBar(QWidget):
         self.ev3_state = "Disconnected"
         self.previous_battery_percentage = 0
         self.battery_info = {}
+        self.is_running = False
 
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(5, 0, 0, 0)
@@ -201,7 +202,10 @@ class IDETitleBar(QWidget):
     def update_toolbar(self, tab):
         if tab is None:
             self.save_button.setEnabled(False)
-            self.run_button.setEnabled(False)
+            if self.is_running:
+                self.run_button.setEnabled(True)
+            else:
+                self.run_button.setEnabled(False)
             self.compile_button.setEnabled(False)
             return
         self.save_button.setEnabled(tab.editable)
@@ -211,7 +215,17 @@ class IDETitleBar(QWidget):
         self.compile_button.setEnabled(is_cpp)
 
     def switch_to_stop_button(self):
-        pass
+        self.is_running = True
+        self.run_button.setEnabled(True)
+        self.run_button.setText("Stop")
+        self.run_button.setIcon(QIcon(resource_path("ui/icons/run-right-click-disabled.svg")))
+        self.run_button.clicked.connect(self.stop_requested)
+
+    def switch_to_run_button(self):
+        self.is_running = False
+        self.run_button.setText("Run")
+        self.run_button.setIcon(QIcon(resource_path("ui/icons/run.svg")))
+        self.run_button.clicked.connect(self.run_requested)
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         if watched is self.ev3_frame and event.type() == QEvent.Type.MouseButtonPress:

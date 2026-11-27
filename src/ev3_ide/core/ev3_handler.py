@@ -109,7 +109,7 @@ class ProcessWorker(QObject):
         if self.channel.exit_status_ready():
             return
         try:
-            self.channel.send_signal("TERM")
+            self.channel.send("\x03")
             self.notification.emit({"type": "error", "title": "Cannot run", "message": "Programm wurde zum Beenden aufgefordert."})
         except Exception as e:
             self.notification.emit({"type": "error", "title": "Cannot run", "message": f"Programm konnte nicht beendet werden: {e}"})

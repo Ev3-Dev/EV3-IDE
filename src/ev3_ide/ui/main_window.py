@@ -169,6 +169,7 @@ class MainWindow(QMainWindow):
         self.title_bar.run_requested.connect(self.run_current_file)
         self.title_bar.save_requested.connect(self.save_current_file)
         self.title_bar.compile_requested.connect(self.compile_current_file)
+        self.title_bar.stop_requested.connect(self.ev3_handler.stop_program)
 
     # Shortcut-Funktionen
     def run_current_file(self):
@@ -263,9 +264,7 @@ class MainWindow(QMainWindow):
 
     def handle_start_output(self):
         self.bottom_tabs.console.clear()
-        self.title_bar.run_button.setEnabled(False)
-        self.title_bar.run_button.setText("Running ...")
-        self.title_bar.run_button.setFixedSize(110, 30)
+        self.title_bar.switch_to_stop_button()
         self.left_sidebar.files_widget.right_click_menu.run_button.setEnabled(False)
 
     def handle_output(self, output):
@@ -273,11 +272,14 @@ class MainWindow(QMainWindow):
 
     def handle_process_finished(self, exit_code):
         self.bottom_tabs.console.append_line(f"\nProcess finished with exit code {exit_code}", "success" if exit_code == 0 else "error")
+        self.title_bar.switch_to_run_button()
         if self.editor_tabs.get_opened_paths():
             tab = self.editor_tabs.current_tab()
             self.title_bar.update_toolbar(tab)
-        self.title_bar.run_button.setText("Run")
-        self.title_bar.run_button.setFixedSize(90, 30)
+        else:
+            self.title_bar.save_button.setEnabled(False)
+            self.title_bar.run_button.setEnabled(False)
+            self.title_bar.compile_button.setEnabled(False)
         self.left_sidebar.files_widget.right_click_menu.run_button.setEnabled(True)
 
     def update_toolbar(self):
