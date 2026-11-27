@@ -50,7 +50,7 @@ class Console(QPlainTextEdit):
         fmt.setForeground(QColor(color))
         cursor = self.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
-        cursor.insertText(text + "\n", fmt)
+        cursor.insertText(text, fmt)
         self.setTextCursor(cursor)
         self.ensureCursorVisible()
 

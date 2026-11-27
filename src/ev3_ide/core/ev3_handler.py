@@ -58,7 +58,12 @@ class ProcessWorker(QObject):
                 self.notification.emit({"type": "error", "title": "Cannot run", "message": "Lost connection to EV3"})
                 return
             self.channel = self.transport.open_session()
-            command = f"exec {shlex.quote(remote_path)}"
+            if remote_path.lower().endswith(".py"):
+                # command = f"python3 {shlex.quote(remote_path)}"
+                command = f"brickrun -r -- python3 -u {shlex.quote(remote_path)}"
+            else:
+                # command = f"exec {shlex.quote(remote_path)}"
+                command = f"brickrun -r -- {shlex.quote(remote_path)}"
             self.channel.exec_command(command)
             self._stop_requested = False
             self.start_output.emit()
@@ -596,7 +601,6 @@ class EV3Handler(QObject):
 
     def run_program(self, remote_path):
         if not self._process_worker:
-            self.notification.emit("ProcessWorker ist nicht verfügbar.")
             return
         self._process_worker.start_process(remote_path)
 

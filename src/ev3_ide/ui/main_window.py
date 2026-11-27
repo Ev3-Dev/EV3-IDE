@@ -179,8 +179,8 @@ class MainWindow(QMainWindow):
             return
         if tab.save_in_progress:
             return
-        run_mode = "python" if tab.path.lower().endswith(".py") else "execute"
-        self.ev3_handler.run_file(tab.path, run_mode)
+        self.save_current_file()
+        self.ev3_handler.run_program(tab.path)
 
     def run_program(self, path):
         self.ev3_handler.run_program(path)
@@ -263,13 +263,12 @@ class MainWindow(QMainWindow):
 
     def handle_start_output(self):
         self.bottom_tabs.console.clear()
-        print("Programm gestartet")
 
     def handle_output(self, output):
         self.bottom_tabs.console.append_line(output, "output")
 
     def handle_process_finished(self, exit_code):
-        self.bottom_tabs.console.append_line(f"Process finished with exit code {exit_code}", "success" if exit_code == 0 else "error")
+        self.bottom_tabs.console.append_line(f"\nProcess finished with exit code {exit_code}", "success" if exit_code == 0 else "error")
 
     def update_toolbar(self):
         tab = self.editor_tabs.current_tab()
